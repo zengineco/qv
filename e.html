@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ============================================================
+     QV (QikVote) v0.1.0 — embed
+     Compact iframe ballot: question, two buttons, live needle.
+     Loaded by qv.js on third-party pages. No ads in embeds.
+     F-Keys | www.f-keys.com
+     ============================================================
+     WORKFLOW STACK:
+     1. Boot: read ?id=, load ballot (PostgREST anon read)
+     2. Render compact buttons/needle; restore my vote (storage may be
+        partitioned in third-party iframes — degrade gracefully)
+     3. Vote -> qv-vote edge function -> tally response
+     4. Realtime broadcast 'poll:{id}' 'tally' -> live needle
+     ASSET MANIFEST:
+     - @supabase/supabase-js@2 UMD (jsdelivr CDN) — realtime only
+     - Edge function: qv-vote
+     BOOT ORDER: DOMContentLoaded -> init() -> loadPoll() -> subscribeLive()
+     ============================================================ -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QV embed</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --bg:#06090e; --line:#14202e; --txt:#d7e6f2; --dim:#6b8299;
+  --a:#46d8ff; --b:#ff5d73; --ok:#59e0a0;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+body{background:var(--bg); color:var(--txt); font-family:system-ui,sans-serif; padding:12px; border:1px solid var(--line); border-radius:12px}
+.q{font-weight:600; font-size:.95rem; line-height:1.3; margin-bottom:10px}
+.votes{display:flex; gap:8px; margin-bottom:10px}
+.vbtn{flex:1; border:1px solid var(--line); border-radius:8px; background:none; color:var(--txt); font-family:inherit; font-weight:700; font-size:.85rem; padding:10px 6px; cursor:pointer}
+.vbtn.a.mine{border-color:var(--a); color:var(--a)}
+.vbtn.b.mine{border-color:var(--b); color:var(--b)}
+.vbtn[disabled]{opacity:.5; cursor:default}
+.needle{height:8px; border-radius:4px; background:var(--line); overflow:hidden; display:flex; margin-bottom:6px}
+.needle .fa{background:var(--a); height:100%; transition:width .5s ease}
+.needle .fb{background:var(--b); height:100%; transition:width .5s ease}
+.meta{display:flex; justify-content:space-between; align-items:baseline; color:var(--dim); font-size:.72rem}
+.meta a{color:var(--a); text-decoration:none; font-weight:700; letter-spacing:.06em}
+.err{color:var(--b); font-size:.75rem; min-height:1em; margin-top:4px}
+</style>
+</head>
+<body>
+  <div class="q" id="q">Loading…</div>
+  <div class="votes">
+    <button class="vbtn a" id="btnA" disabled>—</button>
+    <button class="vbtn b" id="btnB" disabled>—</button>
+  </div>
+  <div class="needle"><span class="fa" id="fa" style="width:50%"></span><span class="fb" id="fb" style="width:50%"></span></div>
+  <div class="meta"><span id="stats">—</span><a id="link" href="#" target="_blank" rel="noopener">QV ↗</a></div>
+  <div class="err" id="err"></div>
+
+<script>
+// ============================================================
+// QV embed script — var-only, single STATE object
+// ============================================================
+var QV = {
+  URL: 'https://ihclxurachkewtgnrldc.supabase.co',
+  REST: 'https://ihclxurachkewtgnrldc.supabase.co/rest/v1',
+  FN: 'https://ihclxurachkewtgnrldc.supabase.co/functions/v1',
+  ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloY2x4dXJhY2hrZXd0Z25ybGRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjQwNjEsImV4cCI6MjA5MDMwMDA2MX0.pRGhaAjtT1VpghQgoEEl7Yns7yZHMP2KL_UE9oMiigY'
+};
+
+var STATE = { id: '', poll: null, mine: null, busy: false, sb: null, chan: null };
+
+// READS/WRITES: localStorage qv_token (may be partitioned inside iframes — ok)
+function getToken() {
+  try {
+    var t = localStorage.getItem('qv_token');
+    if (!t) {
+      var buf = new Uint8Array(16);
+      crypto.getRandomValues(buf);
+      t = '';
+      for (var i = 0; i < buf.length; i++) t += buf[i].toString(16).padStart(2, '0');
+      localStorage.setItem('qv_token', t);
+    }
+    return t;
+  } catch (err) {
+    console.error('getToken:', err);
+    // storage blocked: session-scoped token so voting still works this visit
+    if (!STATE.sessionToken) {
+      var b = new Uint8Array(16);
+      crypto.getRandomValues(b);
+      var s = '';
+      for (var i = 0; i < b.length; i++) s += b[i].toString(16).padStart(2, '0');
+      STATE.sessionToken = s;
+    }
+    return STATE.sessionToken;
+  }
+}
+
+// READS: STATE.poll, STATE.mine / WRITES: DOM
+function render() {
+  var p = STATE.poll;
+  if (!p) return;
+  var open = p.status === 'open' && (!p.closes_at || new Date(p.closes_at) > new Date());
+  document.getElementById('q').textContent = p.question;
+  var ba = document.getElementById('btnA');
+  var bb = document.getElementById('btnB');
+  ba.textContent = p.label_a; bb.textContent = p.label_b;
+  ba.disabled = !open; bb.disabled = !open;
+  ba.className = 'vbtn a' + (STATE.mine === 'A' ? ' mine' : '');
+  bb.className = 'vbtn b' + (STATE.mine === 'B' ? ' mine' : '');
+  var tot = p.a_count + p.b_count;
+  var pa = tot > 0 ? Math.round(p.a_count * 100 / tot) : 50;
+  document.getElementById('fa').style.width = pa + '%';
+  document.getElementById('fb').style.width = (100 - pa) + '%';
+  document.getElementById('stats').textContent =
+    (tot > 0 ? pa + '% · ' + (100 - pa) + '%' : 'no votes yet') + ' · ' + (tot + p.p_count) + ' votes' + (open ? ' · LIVE' : ' · CLOSED');
+}
+
+// READS: qv_polls / WRITES: STATE.poll
+async function loadPoll() {
+  try {
+    var r = await fetch(QV.REST + '/qv_polls?id=eq.' + encodeURIComponent(STATE.id) + '&select=*', {
+      headers: { apikey: QV.ANON, authorization: 'Bearer ' + QV.ANON }
+    });
+    var rows = await r.json();
+    if (!Array.isArray(rows) || rows.length === 0) { document.getElementById('q').textContent = 'Ballot not found.'; return; }
+    STATE.poll = rows[0];
+    try { STATE.mine = localStorage.getItem('qv_vote_' + STATE.id); } catch (e) { STATE.mine = null; }
+    render();
+  } catch (err) {
+    console.error('loadPoll:', err);
+    document.getElementById('err').textContent = 'Could not load ballot.';
+  }
+}
+
+// WRITES: qv_votes via qv-vote
+async function vote(choice) {
+  if (STATE.busy || !STATE.poll) return;
+  STATE.busy = true;
+  document.getElementById('err').textContent = '';
+  try {
+    var r = await fetch(QV.FN + '/qv-vote', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id: STATE.id, choice: choice, t: getToken() })
+    });
+    var out = await r.json();
+    if (out.ok) {
+      STATE.poll.a_count = out.a; STATE.poll.b_count = out.b; STATE.poll.p_count = out.p;
+      STATE.mine = choice;
+      try { localStorage.setItem('qv_vote_' + STATE.id, choice); } catch (e) {}
+      render();
+    } else {
+      document.getElementById('err').textContent =
+        out.error === 'closed' ? 'Ballot closed.' : out.error === 'rate_limited' ? 'Too many votes from this network.' : 'Vote rejected.';
+    }
+  } catch (err) {
+    console.error('vote:', err);
+    document.getElementById('err').textContent = 'Network error — try again.';
+  }
+  STATE.busy = false;
+}
+
+// READS: realtime broadcast / WRITES: STATE.poll counts
+function subscribeLive() {
+  try {
+    STATE.sb = supabase.createClient(QV.URL, QV.ANON);
+    STATE.chan = STATE.sb.channel('poll:' + STATE.id);
+    STATE.chan.on('broadcast', { event: 'tally' }, function (msg) {
+      try {
+        if (!STATE.poll || !msg || !msg.payload) return;
+        STATE.poll.a_count = msg.payload.a;
+        STATE.poll.b_count = msg.payload.b;
+        STATE.poll.p_count = msg.payload.p;
+        render();
+      } catch (err) { console.error('tallyHandler:', err); }
+    });
+    STATE.chan.subscribe();
+  } catch (err) { console.error('subscribeLive:', err); }
+}
+
+function init() {
+  var qs = new URLSearchParams(location.search);
+  STATE.id = (qs.get('id') || '').toLowerCase();
+  if (!/^[a-z0-9]{4,16}$/.test(STATE.id)) { document.getElementById('q').textContent = 'No ballot id.'; return; }
+  document.getElementById('link').href = 'b.html?id=' + encodeURIComponent(STATE.id);
+  document.getElementById('btnA').onclick = function () { vote('A'); };
+  document.getElementById('btnB').onclick = function () { vote('B'); };
+  loadPoll();
+  subscribeLive();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

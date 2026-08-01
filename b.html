@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ============================================================
+     QV (QikVote) v0.1.0 — ballot page
+     One ballot: question, two buttons + PRESENT, live needle.
+     F-Keys | www.f-keys.com
+     ============================================================
+     WORKFLOW STACK:
+     1. Boot: read ?id=, load ballot (PostgREST anon read)
+     2. Render buttons/needle; restore my vote from localStorage
+     3. Vote/change vote -> qv-vote edge function -> tally response
+     4. Subscribe realtime broadcast 'poll:{id}' event 'tally' -> live needle
+     5. Share link + embed snippet copy
+     ASSET MANIFEST:
+     - Google Fonts (Space Grotesk) via @import
+     - @supabase/supabase-js@2 UMD (jsdelivr CDN) — realtime only
+     - Edge function: qv-vote
+     BOOT ORDER: DOMContentLoaded -> init() -> loadPoll() -> subscribeLive()
+     ============================================================ -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QV — live ballot</title>
+<meta name="description" content="A live QV ballot. One tap, one vote, live needle.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8826956454892311" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
+:root{
+  --bg:#06090e; --panel:#0b1118; --line:#14202e; --txt:#d7e6f2; --dim:#6b8299;
+  --a:#46d8ff; --b:#ff5d73; --p:#5a6f84; --ok:#59e0a0;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+body{background:var(--bg); color:var(--txt); font-family:'Space Grotesk',system-ui,sans-serif; min-height:100vh; display:flex; flex-direction:column}
+main{width:100%; max-width:560px; margin:0 auto; padding:20px 16px 40px; flex:1}
+a{color:var(--a); text-decoration:none}
+.top{display:flex; justify-content:space-between; align-items:baseline; padding:12px 0 18px}
+.top .qv{font-weight:700; font-size:1.2rem; letter-spacing:.06em; color:var(--a)}
+.pill{font-size:.75rem; letter-spacing:.14em; border:1px solid var(--line); border-radius:999px; padding:4px 12px; color:var(--dim)}
+.pill.live{border-color:var(--ok); color:var(--ok)}
+.pill.closed{border-color:var(--b); color:var(--b)}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px; margin-bottom:14px}
+h1{font-size:1.5rem; font-weight:700; line-height:1.3; margin-bottom:8px}
+.detail{color:var(--dim); font-size:.95rem; line-height:1.5; margin-bottom:6px}
+.chn{color:var(--dim); font-size:.8rem; margin-bottom:18px}
+.votes{display:flex; gap:10px; margin-bottom:16px}
+.vbtn{flex:1; border:1px solid var(--line); border-radius:12px; background:none; color:var(--txt); font-family:inherit; font-weight:700; font-size:1.05rem; letter-spacing:.03em; padding:18px 8px; cursor:pointer; transition:border-color .15s, background .15s}
+.vbtn:hover{border-color:var(--dim)}
+.vbtn.a.mine{border-color:var(--a); color:var(--a); background:rgba(70,216,255,.08)}
+.vbtn.b.mine{border-color:var(--b); color:var(--b); background:rgba(255,93,115,.08)}
+.vbtn[disabled]{opacity:.5; cursor:default}
+.present{display:block; margin:0 auto 18px; background:none; border:none; color:var(--dim); font-family:inherit; font-size:.85rem; cursor:pointer; text-decoration:underline dotted}
+.present.mine{color:var(--txt)}
+.needle{height:14px; border-radius:7px; background:var(--line); overflow:hidden; display:flex; margin-bottom:10px}
+.needle .fa{background:var(--a); height:100%; transition:width .5s ease}
+.needle .fb{background:var(--b); height:100%; transition:width .5s ease}
+.readout{display:flex; justify-content:space-between; font-size:.95rem; margin-bottom:6px}
+.readout .ra{color:var(--a); font-weight:700}
+.readout .rb{color:var(--b); font-weight:700}
+.total{color:var(--dim); font-size:.85rem; text-align:center; margin-bottom:4px}
+.myline{color:var(--ok); font-size:.85rem; text-align:center; min-height:1.2em}
+.row{display:flex; gap:10px; margin-top:14px}
+.sbtn{flex:1; border:1px solid var(--line); border-radius:10px; background:none; color:var(--dim); font-family:inherit; font-size:.85rem; padding:10px; cursor:pointer}
+.sbtn:hover{border-color:var(--a); color:var(--a)}
+.trust{color:var(--dim); font-size:.78rem; text-align:center; line-height:1.6; margin-top:14px}
+.status{color:var(--b); font-size:.9rem; text-align:center; min-height:1.2em; margin-top:8px}
+footer{border-top:1px solid var(--line); color:var(--dim); text-align:center; font-size:.8rem; padding:16px; line-height:1.8}
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="qv" href="index.html">QV</a><span class="pill" id="pill">…</span></div>
+  <div class="card" id="card">
+    <h1 id="q">Loading ballot…</h1>
+    <div class="detail" id="detail"></div>
+    <div class="chn" id="chn"></div>
+    <div class="votes">
+      <button class="vbtn a" id="btnA" disabled>—</button>
+      <button class="vbtn b" id="btnB" disabled>—</button>
+    </div>
+    <button class="present" id="btnP" disabled>PRESENT — abstain, but count me</button>
+    <div class="needle"><span class="fa" id="fa" style="width:50%"></span><span class="fb" id="fb" style="width:50%"></span></div>
+    <div class="readout"><span class="ra" id="ra">—</span><span class="rb" id="rb">—</span></div>
+    <div class="total" id="total"></div>
+    <div class="myline" id="myline"></div>
+    <div class="status" id="status"></div>
+    <div class="row">
+      <button class="sbtn" id="shareBtn">COPY LINK</button>
+      <button class="sbtn" id="embedBtn">COPY EMBED</button>
+    </div>
+    <div class="trust">CASUAL INTEGRITY · one vote per browser · vote changes allowed · self-selected sample<br>Votes are anonymous. Your choice is stored on this device only.</div>
+  </div>
+</main>
+<footer>QV v0.1.0<br>www.f-keys.com | © 2026 F-Keys™</footer>
+
+<script>
+// ============================================================
+// QV ballot script — var-only, single STATE object
+// ============================================================
+var QV = {
+  URL: 'https://ihclxurachkewtgnrldc.supabase.co',
+  REST: 'https://ihclxurachkewtgnrldc.supabase.co/rest/v1',
+  FN: 'https://ihclxurachkewtgnrldc.supabase.co/functions/v1',
+  ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloY2x4dXJhY2hrZXd0Z25ybGRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjQwNjEsImV4cCI6MjA5MDMwMDA2MX0.pRGhaAjtT1VpghQgoEEl7Yns7yZHMP2KL_UE9oMiigY'
+};
+
+var STATE = {
+  id: '',        // ballot id from ?id=
+  poll: null,    // ballot row
+  mine: null,    // 'A' | 'B' | 'P' | null — my vote on this device
+  busy: false,
+  sb: null,      // supabase client (realtime only)
+  chan: null     // realtime channel
+};
+
+// READS: localStorage qv_token / WRITES: localStorage qv_token
+function getToken() {
+  try {
+    var t = localStorage.getItem('qv_token');
+    if (!t) {
+      var buf = new Uint8Array(16);
+      crypto.getRandomValues(buf);
+      t = '';
+      for (var i = 0; i < buf.length; i++) t += buf[i].toString(16).padStart(2, '0');
+      localStorage.setItem('qv_token', t);
+    }
+    return t;
+  } catch (err) { console.error('getToken:', err); return 'deadbeefdeadbeef'; }
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+// READS: STATE.poll, STATE.mine / WRITES: needle + button DOM
+function render() {
+  var p = STATE.poll;
+  if (!p) return;
+  var open = p.status === 'open' && (!p.closes_at || new Date(p.closes_at) > new Date());
+  document.getElementById('q').textContent = p.question;
+  document.getElementById('detail').textContent = p.detail || '';
+  document.getElementById('chn').textContent = '#' + p.channel;
+  document.title = 'QV — ' + p.question;
+  var pill = document.getElementById('pill');
+  pill.textContent = open ? 'LIVE' : 'CLOSED';
+  pill.className = 'pill ' + (open ? 'live' : 'closed');
+
+  var ba = document.getElementById('btnA');
+  var bb = document.getElementById('btnB');
+  var bp = document.getElementById('btnP');
+  ba.textContent = p.label_a;
+  bb.textContent = p.label_b;
+  ba.disabled = !open; bb.disabled = !open; bp.disabled = !open;
+  ba.className = 'vbtn a' + (STATE.mine === 'A' ? ' mine' : '');
+  bb.className = 'vbtn b' + (STATE.mine === 'B' ? ' mine' : '');
+  bp.className = 'present' + (STATE.mine === 'P' ? ' mine' : '');
+
+  var tot = p.a_count + p.b_count;
+  var pa = tot > 0 ? Math.round(p.a_count * 100 / tot) : 50;
+  document.getElementById('fa').style.width = pa + '%';
+  document.getElementById('fb').style.width = (100 - pa) + '%';
+  document.getElementById('ra').textContent = p.label_a + ' ' + (tot > 0 ? pa + '%' : '—') + ' (' + p.a_count + ')';
+  document.getElementById('rb').textContent = (tot > 0 ? (100 - pa) + '%' : '—') + ' (' + p.b_count + ') ' + p.label_b;
+  document.getElementById('total').textContent = (tot + p.p_count) + ' votes · ' + p.p_count + ' present'
+    + (open && p.closes_at ? ' · closes ' + new Date(p.closes_at).toLocaleString() : '');
+  var my = document.getElementById('myline');
+  if (STATE.mine === 'A') my.textContent = 'Your vote: ' + p.label_a + ' — tap the other side to change it.';
+  else if (STATE.mine === 'B') my.textContent = 'Your vote: ' + p.label_b + ' — tap the other side to change it.';
+  else if (STATE.mine === 'P') my.textContent = 'You are marked PRESENT.';
+  else my.textContent = '';
+}
+
+// READS: qv_polls (anon REST) / WRITES: STATE.poll, STATE.mine
+async function loadPoll() {
+  try {
+    var r = await fetch(QV.REST + '/qv_polls?id=eq.' + encodeURIComponent(STATE.id) + '&select=*', {
+      headers: { apikey: QV.ANON, authorization: 'Bearer ' + QV.ANON }
+    });
+    var rows = await r.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      document.getElementById('q').textContent = 'Ballot not found.';
+      document.getElementById('pill').textContent = '—';
+      return;
+    }
+    STATE.poll = rows[0];
+    try { STATE.mine = localStorage.getItem('qv_vote_' + STATE.id); } catch (e) { STATE.mine = null; }
+    render();
+  } catch (err) {
+    console.error('loadPoll:', err);
+    document.getElementById('status').textContent = 'Could not load the ballot. Refresh to retry.';
+  }
+}
+
+// WRITES: qv_votes via qv-vote; STATE.poll counts; localStorage qv_vote_{id}
+async function vote(choice) {
+  if (STATE.busy || !STATE.poll) return;
+  STATE.busy = true;
+  document.getElementById('status').textContent = '';
+  try {
+    var r = await fetch(QV.FN + '/qv-vote', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id: STATE.id, choice: choice, t: getToken() })
+    });
+    var out = await r.json();
+    if (out.ok) {
+      STATE.poll.a_count = out.a; STATE.poll.b_count = out.b; STATE.poll.p_count = out.p;
+      STATE.mine = choice;
+      try { localStorage.setItem('qv_vote_' + STATE.id, choice); } catch (e) {}
+      render();
+    } else {
+      var msg = out.error === 'closed' ? 'This ballot is closed.'
+        : out.error === 'rate_limited' ? 'Too many votes from this network on this ballot.'
+        : out.error === 'not_found' ? 'Ballot not found.'
+        : 'Vote rejected.';
+      document.getElementById('status').textContent = msg;
+      if (out.error === 'closed') { STATE.poll.status = 'closed'; render(); }
+    }
+  } catch (err) {
+    console.error('vote:', err);
+    document.getElementById('status').textContent = 'Network error — vote not counted. Try again.';
+  }
+  STATE.busy = false;
+}
+
+// READS: realtime broadcast poll:{id} / WRITES: STATE.poll counts
+function subscribeLive() {
+  try {
+    STATE.sb = supabase.createClient(QV.URL, QV.ANON);
+    STATE.chan = STATE.sb.channel('poll:' + STATE.id);
+    STATE.chan.on('broadcast', { event: 'tally' }, function (msg) {
+      try {
+        if (!STATE.poll || !msg || !msg.payload) return;
+        STATE.poll.a_count = msg.payload.a;
+        STATE.poll.b_count = msg.payload.b;
+        STATE.poll.p_count = msg.payload.p;
+        render();
+      } catch (err) { console.error('tallyHandler:', err); }
+    });
+    STATE.chan.subscribe();
+  } catch (err) { console.error('subscribeLive:', err); }
+}
+
+async function copyText(txt, btn, done) {
+  try {
+    await navigator.clipboard.writeText(txt);
+    var old = btn.textContent;
+    btn.textContent = done;
+    setTimeout(function () { btn.textContent = old; }, 1500);
+  } catch (err) {
+    console.error('copyText:', err);
+    window.prompt('Copy this:', txt);
+  }
+}
+
+function init() {
+  var qs = new URLSearchParams(location.search);
+  STATE.id = (qs.get('id') || '').toLowerCase();
+  if (!/^[a-z0-9]{4,16}$/.test(STATE.id)) {
+    document.getElementById('q').textContent = 'No ballot id.';
+    return;
+  }
+  document.getElementById('btnA').onclick = function () { vote('A'); };
+  document.getElementById('btnB').onclick = function () { vote('B'); };
+  document.getElementById('btnP').onclick = function () { vote('P'); };
+  document.getElementById('shareBtn').onclick = function () {
+    copyText(location.href, this, 'COPIED ✓');
+  };
+  document.getElementById('embedBtn').onclick = function () {
+    var base = location.href.slice(0, location.href.lastIndexOf('/') + 1);
+    copyText('<script src="' + base + 'qv.js" data-ballot="' + STATE.id + '" async><\/script>', this, 'COPIED ✓');
+  };
+  loadPoll();
+  subscribeLive();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

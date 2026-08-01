@@ -1,0 +1,13 @@
+{
+  "name": "QV — QikVote",
+  "short_name": "QV",
+  "description": "Live ballots. One tap, one vote, live needle.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#06090e",
+  "theme_color": "#06090e",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

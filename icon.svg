@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- QV v0.1.0 icon — F-Keys | www.f-keys.com -->
+  <rect width="128" height="128" rx="24" fill="#06090e"/>
+  <rect x="4" y="4" width="120" height="120" rx="20" fill="none" stroke="#14202e" stroke-width="2"/>
+  <text x="64" y="82" font-family="'Space Grotesk','Segoe UI',system-ui,sans-serif" font-size="52" font-weight="700" letter-spacing="2" text-anchor="middle" fill="#46d8ff">QV</text>
+  <rect x="28" y="96" width="44" height="6" rx="3" fill="#46d8ff"/>
+  <rect x="72" y="96" width="28" height="6" rx="3" fill="#ff5d73"/>
+</svg>

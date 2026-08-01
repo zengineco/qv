@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ============================================================
+     QV (QikVote) v0.1.0 — index
+     Home: open ballots, channel notifications opt-in, creator apply.
+     F-Keys | www.f-keys.com
+     ============================================================
+     WORKFLOW STACK:
+     1. Boot: read config constants, generate/load voter token
+     2. Fetch open ballots (PostgREST anon read) -> render list
+     3. Notifications: register sw.js -> permission -> push subscribe -> qv-subscribe
+     4. Creator application form -> qv-apply
+     ASSET MANIFEST:
+     - Google Fonts (Space Grotesk) via @import
+     - Supabase PostgREST (anon key, read-only)
+     - Edge functions: qv-subscribe, qv-apply
+     - sw.js (service worker), manifest.json, icon.svg
+     BOOT ORDER: DOMContentLoaded -> init() -> loadBallots() + syncNotifyUI()
+     ============================================================ -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QV — live ballots</title>
+<meta name="description" content="QV (QikVote) — live yes/no ballots. One tap, one vote, live needle. The ballot comes to you.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8826956454892311" crossorigin="anonymous"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
+:root{
+  --bg:#06090e; --panel:#0b1118; --line:#14202e; --txt:#d7e6f2; --dim:#6b8299;
+  --a:#46d8ff; --b:#ff5d73; --p:#5a6f84; --ok:#59e0a0;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+body{background:var(--bg); color:var(--txt); font-family:'Space Grotesk',system-ui,sans-serif; min-height:100vh; display:flex; flex-direction:column}
+main{width:100%; max-width:680px; margin:0 auto; padding:20px 16px 40px; flex:1}
+a{color:var(--a); text-decoration:none}
+a:hover{text-decoration:underline}
+.brand{display:flex; align-items:baseline; gap:10px; padding:18px 0 4px}
+.brand .qv{font-size:2rem; font-weight:700; letter-spacing:.06em; color:var(--a)}
+.brand .sub{color:var(--dim); font-size:.9rem}
+.tag{color:var(--dim); font-size:.95rem; margin-bottom:22px}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:14px}
+h2{font-size:.8rem; letter-spacing:.18em; color:var(--dim); text-transform:uppercase; margin-bottom:12px}
+.ballot{display:block; border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:10px; color:var(--txt); transition:border-color .15s}
+.ballot:hover{border-color:var(--a); text-decoration:none}
+.ballot .q{font-weight:500; margin-bottom:8px}
+.mini{height:6px; border-radius:3px; background:var(--line); overflow:hidden; display:flex; margin-bottom:6px}
+.mini .fa{background:var(--a); height:100%}
+.mini .fb{background:var(--b); height:100%}
+.meta{display:flex; justify-content:space-between; color:var(--dim); font-size:.8rem}
+.chiprow{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px}
+.chip{border:1px solid var(--line); border-radius:999px; padding:6px 14px; background:none; color:var(--txt); font-family:inherit; font-size:.85rem; cursor:pointer}
+.chip.on{border-color:var(--a); color:var(--a)}
+.btn{display:inline-block; border:1px solid var(--a); border-radius:10px; background:none; color:var(--a); font-family:inherit; font-weight:700; font-size:.95rem; letter-spacing:.04em; padding:12px 18px; cursor:pointer; width:100%}
+.btn:hover{background:rgba(70,216,255,.08)}
+.btn[disabled]{opacity:.45; cursor:default}
+.btn.ghost{border-color:var(--line); color:var(--dim); font-weight:400}
+input,textarea{width:100%; background:var(--bg); border:1px solid var(--line); border-radius:8px; color:var(--txt); font-family:inherit; font-size:.95rem; padding:10px 12px; margin-bottom:10px}
+input:focus,textarea:focus{outline:none; border-color:var(--a)}
+.note{color:var(--dim); font-size:.85rem; line-height:1.5; margin-top:10px}
+.status{font-size:.9rem; margin-top:10px; min-height:1.2em}
+.status.ok{color:var(--ok)}
+.status.err{color:var(--b)}
+footer{border-top:1px solid var(--line); color:var(--dim); text-align:center; font-size:.8rem; padding:16px; line-height:1.8}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><span class="qv">QV</span><span class="sub">QikVote</span></div>
+  <div class="tag">Live ballots. One tap, one vote, live needle. The ballot comes to you.</div>
+
+  <div class="card">
+    <h2>Open ballots</h2>
+    <div id="list"><span class="note">Loading…</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Ballot notifications</h2>
+    <div class="note" style="margin:0 0 12px">Pick your channels. When a ballot drops in one of them, it lands in your notifications — vote from the buttons, nothing opens.</div>
+    <div class="chiprow" id="chips"></div>
+    <input id="customChannel" maxlength="32" placeholder="custom channel (a-z, 0-9, dash)" autocomplete="off">
+    <button class="btn" id="notifyBtn">TURN ON BALLOT NOTIFICATIONS</button>
+    <button class="btn ghost" id="notifyOff" style="display:none; margin-top:8px">Turn off notifications</button>
+    <div class="status" id="notifyStatus"></div>
+    <div class="note" id="iosNote" style="display:none">iPhone: tap Share → <b>Add to Home Screen</b>, open QV from there, then turn on notifications. iOS shows ballots as tap-to-open (Apple doesn't allow buttons on web notifications yet).</div>
+  </div>
+
+  <div class="card">
+    <h2>Apply to be a creator</h2>
+    <div class="note" style="margin:0 0 12px">Anyone can vote. Publishing ballots takes a creator key — tell us who you are and what you'd run.</div>
+    <input id="apName" maxlength="80" placeholder="name / handle" autocomplete="off">
+    <input id="apContact" maxlength="200" placeholder="contact (email or @)" autocomplete="off">
+    <textarea id="apPitch" maxlength="1000" rows="3" placeholder="what would you put to a vote?"></textarea>
+    <button class="btn" id="applyBtn">APPLY</button>
+    <div class="status" id="applyStatus"></div>
+  </div>
+
+  <div class="note" style="text-align:center">Every result is labeled honestly: casual integrity, one vote per browser, self-selected sample. <a href="creator.html">Creator terminal</a></div>
+</main>
+<footer>QV v0.1.0<br>www.f-keys.com | © 2026 F-Keys™</footer>
+
+<script>
+// ============================================================
+// QV index script — var-only, single STATE object
+// ============================================================
+var QV = {
+  REST: 'https://ihclxurachkewtgnrldc.supabase.co/rest/v1',
+  FN: 'https://ihclxurachkewtgnrldc.supabase.co/functions/v1',
+  ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloY2x4dXJhY2hrZXd0Z25ybGRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjQwNjEsImV4cCI6MjA5MDMwMDA2MX0.pRGhaAjtT1VpghQgoEEl7Yns7yZHMP2KL_UE9oMiigY',
+  PUSHKEY: 'BDOIEakjLxif0oyiKlC3sK-EutDcRXxR8-Cr_VOaa1Xy5nlYs4_LRqScq4Nqkq5qShQVmkilE19b-bMALx3_JJU',
+  CHANNELS: ['general','politics','sports','food','games','music','movies','tech']
+};
+
+var STATE = {
+  picked: [],        // channels selected in the UI
+  subscribed: false, // do we currently hold a push subscription
+  busy: false
+};
+
+// READS: localStorage qv_token / WRITES: localStorage qv_token, IndexedDB qv.kv.token
+function getToken() {
+  try {
+    var t = localStorage.getItem('qv_token');
+    if (!t) {
+      var buf = new Uint8Array(16);
+      crypto.getRandomValues(buf);
+      t = '';
+      for (var i = 0; i < buf.length; i++) t += buf[i].toString(16).padStart(2, '0');
+      localStorage.setItem('qv_token', t);
+    }
+    idbPut('token', t); // mirror for the service worker
+    return t;
+  } catch (err) { console.error('getToken:', err); return 'deadbeefdeadbeef'; }
+}
+
+// tiny IndexedDB kv so sw.js can read the voter token (SW has no localStorage)
+function idbOpen() {
+  return new Promise(function (resolve, reject) {
+    var rq = indexedDB.open('qv', 1);
+    rq.onupgradeneeded = function () { rq.result.createObjectStore('kv'); };
+    rq.onsuccess = function () { resolve(rq.result); };
+    rq.onerror = function () { reject(rq.error); };
+  });
+}
+function idbPut(k, v) {
+  return idbOpen().then(function (db) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction('kv', 'readwrite');
+      tx.objectStore('kv').put(v, k);
+      tx.oncomplete = function () { resolve(true); };
+      tx.onerror = function () { reject(tx.error); };
+    });
+  }).catch(function (err) { console.error('idbPut:', err); });
+}
+
+// READS: qv_polls (anon REST) / WRITES: #list DOM
+async function loadBallots() {
+  try {
+    var r = await fetch(QV.REST + '/qv_polls?status=eq.open&order=created_at.desc&limit=20&select=id,question,label_a,label_b,channel,a_count,b_count,p_count', {
+      headers: { apikey: QV.ANON, authorization: 'Bearer ' + QV.ANON }
+    });
+    var rows = await r.json();
+    var el = document.getElementById('list');
+    if (!Array.isArray(rows) || rows.length === 0) { el.innerHTML = '<span class="note">No open ballots right now.</span>'; return; }
+    var html = '';
+    for (var i = 0; i < rows.length; i++) {
+      var p = rows[i];
+      var tot = p.a_count + p.b_count;
+      var pa = tot > 0 ? Math.round(p.a_count * 100 / tot) : 50;
+      html += '<a class="ballot" href="b.html?id=' + encodeURIComponent(p.id) + '">'
+        + '<div class="q">' + esc(p.question) + '</div>'
+        + '<div class="mini"><span class="fa" style="width:' + pa + '%"></span><span class="fb" style="width:' + (100 - pa) + '%"></span></div>'
+        + '<div class="meta"><span>' + esc(p.label_a) + ' ' + (tot > 0 ? pa + '%' : '—') + ' · ' + esc(p.label_b) + ' ' + (tot > 0 ? (100 - pa) + '%' : '—') + '</span>'
+        + '<span>#' + esc(p.channel) + ' · ' + (tot + p.p_count) + ' votes</span></div></a>';
+    }
+    el.innerHTML = html;
+  } catch (err) {
+    console.error('loadBallots:', err);
+    document.getElementById('list').innerHTML = '<span class="status err">Could not load ballots. Refresh to retry.</span>';
+  }
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+// WRITES: #chips DOM, STATE.picked
+function renderChips() {
+  var box = document.getElementById('chips');
+  var html = '';
+  for (var i = 0; i < QV.CHANNELS.length; i++) {
+    var c = QV.CHANNELS[i];
+    html += '<button type="button" class="chip' + (STATE.picked.indexOf(c) >= 0 ? ' on' : '') + '" data-ch="' + c + '">#' + c + '</button>';
+  }
+  box.innerHTML = html;
+  var chips = box.querySelectorAll('.chip');
+  for (var j = 0; j < chips.length; j++) {
+    chips[j].onclick = function () {
+      var ch = this.getAttribute('data-ch');
+      var at = STATE.picked.indexOf(ch);
+      if (at >= 0) STATE.picked.splice(at, 1); else STATE.picked.push(ch);
+      try { localStorage.setItem('qv_channels', JSON.stringify(STATE.picked)); } catch (e) {}
+      renderChips();
+    };
+  }
+}
+
+function urlB64ToU8(s) {
+  var pad = '='.repeat((4 - s.length % 4) % 4);
+  var b64 = (s + pad).replace(/-/g, '+').replace(/_/g, '/');
+  var raw = atob(b64);
+  var out = new Uint8Array(raw.length);
+  for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+function setNotify(msg, ok) {
+  var el = document.getElementById('notifyStatus');
+  el.textContent = msg;
+  el.className = 'status ' + (ok ? 'ok' : 'err');
+}
+
+// READS: STATE.picked / WRITES: push subscription, qv_push_subs (via qv-subscribe)
+async function turnOnNotifications() {
+  if (STATE.busy) return;
+  STATE.busy = true;
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setNotify('This browser does not support push. On iPhone: Add to Home Screen first.', false);
+      STATE.busy = false; return;
+    }
+    var custom = document.getElementById('customChannel').value.trim().toLowerCase();
+    if (custom && /^[a-z0-9-]{2,32}$/.test(custom) && STATE.picked.indexOf(custom) === -1) STATE.picked.push(custom);
+    if (STATE.picked.length === 0) STATE.picked.push('general');
+
+    var reg = await navigator.serviceWorker.register('sw.js');
+    await navigator.serviceWorker.ready;
+    var perm = await Notification.requestPermission();
+    if (perm !== 'granted') { setNotify('Notifications blocked. Allow them in your browser settings and retry.', false); STATE.busy = false; return; }
+
+    var sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToU8(QV.PUSHKEY) });
+    var r = await fetch(QV.FN + '/qv-subscribe', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ sub: sub.toJSON(), channels: STATE.picked })
+    });
+    var out = await r.json();
+    if (!out.ok) { setNotify('Subscribe failed. Try again.', false); STATE.busy = false; return; }
+    getToken(); // make sure the SW can vote with the same identity
+    STATE.subscribed = true;
+    try { localStorage.setItem('qv_channels', JSON.stringify(out.channels)); } catch (e) {}
+    setNotify('On. Channels: #' + out.channels.join('  #'), true);
+    document.getElementById('notifyOff').style.display = 'block';
+    document.getElementById('notifyBtn').textContent = 'UPDATE CHANNELS';
+  } catch (err) {
+    console.error('turnOnNotifications:', err);
+    setNotify('Could not subscribe: ' + (err && err.message ? err.message : 'unknown error'), false);
+  }
+  STATE.busy = false;
+}
+
+// WRITES: removes push subscription + backend row
+async function turnOffNotifications() {
+  try {
+    var reg = await navigator.serviceWorker.getRegistration();
+    if (reg) {
+      var sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        await fetch(QV.FN + '/qv-subscribe', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'unsubscribe', endpoint: sub.endpoint })
+        });
+        await sub.unsubscribe();
+      }
+    }
+    STATE.subscribed = false;
+    setNotify('Off.', true);
+    document.getElementById('notifyOff').style.display = 'none';
+    document.getElementById('notifyBtn').textContent = 'TURN ON BALLOT NOTIFICATIONS';
+  } catch (err) { console.error('turnOffNotifications:', err); setNotify('Could not unsubscribe.', false); }
+}
+
+// READS: existing push subscription / WRITES: notify UI state
+async function syncNotifyUI() {
+  try {
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    var standalone = ('standalone' in navigator) && navigator.standalone;
+    if (isIOS && !standalone) document.getElementById('iosNote').style.display = 'block';
+    try { STATE.picked = JSON.parse(localStorage.getItem('qv_channels') || '[]'); } catch (e) { STATE.picked = []; }
+    renderChips();
+    if ('serviceWorker' in navigator) {
+      var reg = await navigator.serviceWorker.getRegistration();
+      if (reg) {
+        var sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          STATE.subscribed = true;
+          setNotify('On. Channels: #' + (STATE.picked.length ? STATE.picked.join('  #') : 'general'), true);
+          document.getElementById('notifyOff').style.display = 'block';
+          document.getElementById('notifyBtn').textContent = 'UPDATE CHANNELS';
+        }
+      }
+    }
+  } catch (err) { console.error('syncNotifyUI:', err); }
+}
+
+// WRITES: qv_creator_apps (via qv-apply)
+async function apply() {
+  var el = document.getElementById('applyStatus');
+  try {
+    var name = document.getElementById('apName').value.trim();
+    var contact = document.getElementById('apContact').value.trim();
+    var pitch = document.getElementById('apPitch').value.trim();
+    if (!name || contact.length < 3 || !pitch) { el.textContent = 'All three fields, please.'; el.className = 'status err'; return; }
+    document.getElementById('applyBtn').disabled = true;
+    var r = await fetch(QV.FN + '/qv-apply', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: name, contact: contact, pitch: pitch })
+    });
+    var out = await r.json();
+    if (out.ok) { el.textContent = 'Application received.'; el.className = 'status ok'; }
+    else { el.textContent = out.error === 'rate_limited' ? 'Limit reached — try tomorrow.' : 'Something rejected that. Check lengths.'; el.className = 'status err'; document.getElementById('applyBtn').disabled = false; }
+  } catch (err) {
+    console.error('apply:', err);
+    el.textContent = 'Network error — try again.'; el.className = 'status err';
+    document.getElementById('applyBtn').disabled = false;
+  }
+}
+
+function init() {
+  getToken();
+  loadBallots();
+  syncNotifyUI();
+  document.getElementById('notifyBtn').onclick = turnOnNotifications;
+  document.getElementById('notifyOff').onclick = turnOffNotifications;
+  document.getElementById('applyBtn').onclick = apply;
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
