@@ -1,4 +1,4 @@
-# QV — QikVote v0.1.0 ("Ballot Box")
+# QV — QikVote v0.2.0 ("Ballot Box")
 
 **Live ballots. One tap, one vote, live needle. The ballot comes to you.**
 
@@ -28,6 +28,23 @@ An F-Keys product. Home: qv.f-keys.com
 <script src="https://qv.f-keys.com/qv.js" data-ballot="BALLOT_ID" async></script>
 ```
 
+## Question reconciliation (v0.2.0)
+
+Two people asking the same question in two ballots splits the tally and makes both
+answers worse. Before a ballot is created, QV reconciles the question against every
+live ballot:
+
+- **Exact match** (after lowercasing, stripping punctuation and leading filler like
+  "should we" / "do you think") → creation is blocked and the live ballot is offered
+  instead, with its current vote count.
+- **Near match** (trigram word-overlap ≥ 0.55) → related ballots are shown as a
+  warning; the creator can publish anyway.
+
+Word order is never sorted away. *"Is coffee better than tea"* and *"Is tea better
+than coffee"* contain identical words but have opposite answers, so they are flagged
+as related and never auto-merged — the exact-match tier compares the ordered string,
+and the overlap score is labeled as word overlap, not meaning.
+
 ## How trust works (honest by design)
 
 - Voting is anonymous. Your choice is stored on your device; the server keeps a
@@ -41,8 +58,9 @@ An F-Keys product. Home: qv.f-keys.com
 
 ## Backend (Supabase project `ihclxurachkewtgnrldc`)
 
-- Tables (all RLS): `qv_polls` (public read), `qv_votes`, `qv_push_subs`,
+- Tables (all RLS): `qv_polls` (public read, `question_norm` generated column + GIN trigram index), `qv_votes`, `qv_push_subs`,
   `qv_creators`, `qv_creator_apps`, `qv_config` (service-role only)
+- RPC `qv_find_similar` — question reconciliation (service role only)
 - RPC `qv_cast_vote` — atomic vote/change + tally + realtime broadcast; callable
   by service role only
 - Edge functions: `qv-vote`, `qv-subscribe`, `qv-publish` (creator key gated,
@@ -71,4 +89,4 @@ An F-Keys product. Home: qv.f-keys.com
 
 ---
 
-QV v0.1.0 · www.f-keys.com | © 2026 F-Keys™
+QV v0.2.0 · www.f-keys.com | © 2026 F-Keys™
