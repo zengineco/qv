@@ -1,0 +1,18 @@
+[
+  { "question": "Should museums return artefacts to their country of origin?", "label_a": "RETURN THEM", "label_b": "KEEP THEM", "channel": "history" },
+  { "question": "Is history written by the winners?", "label_a": "ALWAYS", "label_b": "NOT ANYMORE", "channel": "history" },
+  { "question": "Would you rather visit the past or the future?", "label_a": "THE PAST", "label_b": "THE FUTURE", "channel": "history" },
+  { "question": "Should statues of controversial figures come down?", "label_a": "COME DOWN", "label_b": "STAY UP", "channel": "history" },
+  { "question": "Is the printing press a bigger invention than the internet?", "label_a": "PRINTING PRESS", "label_b": "INTERNET", "channel": "history" },
+  { "question": "Do individuals change history, or do conditions?", "label_a": "INDIVIDUALS", "label_b": "CONDITIONS", "channel": "history" },
+  { "question": "Should family recipes be written down or taught by hand?", "label_a": "WRITTEN DOWN", "label_b": "TAUGHT BY HAND", "channel": "history" },
+  { "question": "Is an oral account worth as much as a document?", "label_a": "WORTH AS MUCH", "label_b": "WORTH LESS", "channel": "history" },
+  { "question": "Should immigration records be free to search?", "label_a": "FREE", "label_b": "PAID IS FINE", "channel": "history" },
+  { "question": "Is a tradition worth keeping if nobody remembers why?", "label_a": "KEEP IT", "label_b": "LET IT GO", "channel": "history" },
+  { "question": "Would you want to read your great-grandparents' letters?", "label_a": "YES", "label_b": "NO", "channel": "history" },
+  { "question": "Should old buildings be preserved or replaced?", "label_a": "PRESERVED", "label_b": "REPLACED", "channel": "history" },
+  { "question": "Is a recipe a historical document?", "label_a": "IT IS", "label_b": "IT ISN'T", "channel": "history" },
+  { "question": "Do immigrant foods belong to the old country or the new one?", "label_a": "THE OLD", "label_b": "THE NEW", "channel": "history" },
+  { "question": "Should schools teach local history before world history?", "label_a": "LOCAL FIRST", "label_b": "WORLD FIRST", "channel": "history" },
+  { "question": "Is a photograph better evidence than a written account?", "label_a": "PHOTOGRAPH", "label_b": "WRITTEN", "channel": "history" }
+]

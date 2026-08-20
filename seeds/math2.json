@@ -1,0 +1,18 @@
+[
+  { "question": "Should a calculator be allowed on every maths exam?", "label_a": "ALLOWED", "label_b": "NOT ALLOWED", "channel": "math" },
+  { "question": "Is statistics more useful than calculus?", "label_a": "STATISTICS", "label_b": "CALCULUS", "channel": "math" },
+  { "question": "Is a proof by contradiction as satisfying as a direct proof?", "label_a": "JUST AS GOOD", "label_b": "LESS SATISFYING", "channel": "math" },
+  { "question": "Should mathematical notation be standardised worldwide?", "label_a": "STANDARDISE", "label_b": "LEAVE IT", "channel": "math" },
+  { "question": "Is a 300-page proof still a proof if nobody can check it?", "label_a": "STILL A PROOF", "label_b": "NOT YET", "channel": "math" },
+  { "question": "Do you trust a numerical result more than a symbolic one?", "label_a": "NUMERICAL", "label_b": "SYMBOLIC", "channel": "math" },
+  { "question": "Is mathematics a science or an art?", "label_a": "SCIENCE", "label_b": "ART", "channel": "math" },
+  { "question": "Should papers publish their code?", "label_a": "ALWAYS", "label_b": "OPTIONAL", "channel": "math" },
+  { "question": "Is an unsolved problem more valuable than a solved one?", "label_a": "UNSOLVED", "label_b": "SOLVED", "channel": "math" },
+  { "question": "Would you rather be right or be first?", "label_a": "RIGHT", "label_b": "FIRST", "channel": "math" },
+  { "question": "Should a textbook show the failed attempts?", "label_a": "SHOW THEM", "label_b": "JUST THE RESULT", "channel": "math" },
+  { "question": "Is 1 a prime number?", "label_a": "PRIME", "label_b": "NOT PRIME", "channel": "math" },
+  { "question": "Is the empty set a strange idea or an obvious one?", "label_a": "STRANGE", "label_b": "OBVIOUS", "channel": "math" },
+  { "question": "Do you picture maths or manipulate symbols?", "label_a": "PICTURE IT", "label_b": "SYMBOLS", "channel": "math" },
+  { "question": "Should a theorem be named after its discoverer?", "label_a": "NAME IT", "label_b": "DESCRIBE IT", "channel": "math" },
+  { "question": "Is mental arithmetic still worth practising?", "label_a": "WORTH IT", "label_b": "OBSOLETE", "channel": "math" }
+]

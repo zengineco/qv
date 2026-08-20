@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
 <!-- ============================================================
-     QV (QikVote) v0.3.2 — index
+     QV (QikVote) v0.5.0 — index
      Home: open ballots, channel notifications opt-in, creator apply.
      F-Keys | www.f-keys.com
      ============================================================
      WORKFLOW STACK:
      1. Boot: read config constants, generate/load voter token
-     2. Fetch open ballots (PostgREST anon read) -> render list
+     2. Fetch open ballots (PostgREST anon read) -> render VOTABLE cards
+        with channel filters and paging; voting happens in the feed
      3. Notifications: register sw.js -> permission -> push subscribe -> qv-subscribe
      4. Creator application form -> qv-apply
      ASSET MANIFEST:
@@ -42,13 +43,24 @@ a:hover{text-decoration:underline}
 .tag{color:var(--dim); font-size:.95rem; margin-bottom:22px}
 .card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:14px}
 h2{font-size:.8rem; letter-spacing:.18em; color:var(--dim); text-transform:uppercase; margin-bottom:12px}
-.ballot{display:block; border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:10px; color:var(--txt); transition:border-color .15s}
-.ballot:hover{border-color:var(--a); text-decoration:none}
-.ballot .q{font-weight:500; margin-bottom:8px}
+.ballot{border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:10px; color:var(--txt)}
+.ballot .q{font-weight:500; margin-bottom:10px; line-height:1.35}
+.ballot .d{color:var(--dim); font-size:.82rem; margin:-6px 0 10px; line-height:1.45}
+.vrow{display:flex; gap:8px; margin-bottom:10px}
+.vbtn{flex:1; border:1px solid var(--line); border-radius:8px; background:none; color:var(--txt); font-family:inherit; font-weight:700; font-size:.85rem; letter-spacing:.02em; padding:11px 6px; cursor:pointer; transition:border-color .15s, background .15s}
+.vbtn:hover{border-color:var(--dim)}
+.vbtn.a.mine{border-color:var(--a); color:var(--a); background:rgba(70,216,255,.09)}
+.vbtn.b.mine{border-color:var(--b); color:var(--b); background:rgba(255,93,115,.09)}
+.vbtn[disabled]{opacity:.5; cursor:default}
 .mini{height:6px; border-radius:3px; background:var(--line); overflow:hidden; display:flex; margin-bottom:6px}
-.mini .fa{background:var(--a); height:100%}
-.mini .fb{background:var(--b); height:100%}
+.mini .fa{background:var(--a); height:100%; transition:width .4s ease}
+.mini .fb{background:var(--b); height:100%; transition:width .4s ease}
 .meta{display:flex; justify-content:space-between; color:var(--dim); font-size:.8rem}
+.meta a{color:var(--dim)}
+.meta a:hover{color:var(--a)}
+.filters{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px}
+.fchip{border:1px solid var(--line); border-radius:999px; padding:5px 12px; background:none; color:var(--dim); font-family:inherit; font-size:.78rem; cursor:pointer}
+.fchip.on{border-color:var(--a); color:var(--a)}
 .chiprow{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px}
 .chip{border:1px solid var(--line); border-radius:999px; padding:6px 14px; background:none; color:var(--txt); font-family:inherit; font-size:.85rem; cursor:pointer}
 .chip.on{border-color:var(--a); color:var(--a)}
@@ -71,8 +83,10 @@ footer{border-top:1px solid var(--line); color:var(--dim); text-align:center; fo
   <div class="tag">Live ballots. One tap, one vote, live needle. The ballot comes to you.</div>
 
   <div class="card">
-    <h2>Open ballots</h2>
+    <h2>Vote on anything</h2>
+    <div class="filters" id="filters"></div>
     <div id="list"><span class="note">Loading…</span></div>
+    <button class="btn ghost" id="moreBtn" style="display:none; margin-top:4px">LOAD MORE</button>
   </div>
 
   <div class="card">
@@ -99,7 +113,7 @@ footer{border-top:1px solid var(--line); color:var(--dim); text-align:center; fo
 
   <div class="note" style="text-align:center">Every result is labeled honestly: casual integrity, one vote per browser, self-selected sample. <a href="creator.html">Creator terminal</a></div>
 </main>
-<footer>QV v0.3.2<br>www.f-keys.com | © 2026 F-Keys™</footer>
+<footer>QV v0.5.0<br>www.f-keys.com | © 2026 F-Keys™</footer>
 
 <script>
 // ============================================================
@@ -110,13 +124,17 @@ var QV = {
   FN: 'https://ihclxurachkewtgnrldc.supabase.co/functions/v1',
   ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloY2x4dXJhY2hrZXd0Z25ybGRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjQwNjEsImV4cCI6MjA5MDMwMDA2MX0.pRGhaAjtT1VpghQgoEEl7Yns7yZHMP2KL_UE9oMiigY',
   PUSHKEY: 'BDOIEakjLxif0oyiKlC3sK-EutDcRXxR8-Cr_VOaa1Xy5nlYs4_LRqScq4Nqkq5qShQVmkilE19b-bMALx3_JJU',
-  CHANNELS: ['general','politics','sports','food','games','music','movies','tech']
+  CHANNELS: ['general','politics','sports','food','games','music','movies','tech'],
+  PAGE: 25
 };
 
 var STATE = {
-  picked: [],        // channels selected in the UI
+  picked: [],        // notification channels selected in the UI
   subscribed: false, // do we currently hold a push subscription
-  busy: false
+  busy: false,
+  filter: '',        // channel filter on the feed ('' = all)
+  offset: 0,         // paging cursor into qv_polls
+  voted: 0           // ballots voted on this session
 };
 
 // READS: localStorage qv_token / WRITES: localStorage qv_token, IndexedDB qv.kv.token
@@ -155,30 +173,121 @@ function idbPut(k, v) {
   }).catch(function (err) { console.error('idbPut:', err); });
 }
 
-// READS: qv_polls (anon REST) / WRITES: #list DOM
-async function loadBallots() {
+// READS: qv_polls channels / WRITES: #filters DOM, STATE.filter
+async function loadFilters() {
   try {
-    var r = await fetch(QV.REST + '/qv_polls?status=eq.open&order=created_at.desc&limit=20&select=id,question,label_a,label_b,channel,a_count,b_count,p_count', {
+    var r = await fetch(QV.REST + '/qv_polls?status=eq.open&select=channel', {
       headers: { apikey: QV.ANON, authorization: 'Bearer ' + QV.ANON }
     });
     var rows = await r.json();
-    var el = document.getElementById('list');
-    if (!Array.isArray(rows) || rows.length === 0) { el.innerHTML = '<span class="note">No open ballots right now.</span>'; return; }
-    var html = '';
-    for (var i = 0; i < rows.length; i++) {
-      var p = rows[i];
-      var tot = p.a_count + p.b_count;
-      var pa = tot > 0 ? Math.round(p.a_count * 100 / tot) : 50;
-      html += '<a class="ballot" href="b.html?id=' + encodeURIComponent(p.id) + '">'
-        + '<div class="q">' + esc(p.question) + '</div>'
-        + '<div class="mini"><span class="fa" style="width:' + pa + '%"></span><span class="fb" style="width:' + (100 - pa) + '%"></span></div>'
-        + '<div class="meta"><span>' + esc(p.label_a) + ' ' + (tot > 0 ? pa + '%' : '—') + ' · ' + esc(p.label_b) + ' ' + (tot > 0 ? (100 - pa) + '%' : '—') + '</span>'
-        + '<span>#' + esc(p.channel) + ' · ' + (tot + p.p_count) + ' votes</span></div></a>';
+    if (!Array.isArray(rows)) return;
+    var counts = {};
+    for (var i = 0; i < rows.length; i++) counts[rows[i].channel] = (counts[rows[i].channel] || 0) + 1;
+    var names = Object.keys(counts).sort(function (x, y) { return counts[y] - counts[x]; });
+    var html = '<button type="button" class="fchip' + (STATE.filter ? '' : ' on') + '" data-ch="">ALL ' + rows.length + '</button>';
+    for (var j = 0; j < names.length; j++) {
+      html += '<button type="button" class="fchip' + (STATE.filter === names[j] ? ' on' : '') + '" data-ch="' + esc(names[j]) + '">#'
+        + esc(names[j]) + ' ' + counts[names[j]] + '</button>';
     }
-    el.innerHTML = html;
+    var box = document.getElementById('filters');
+    box.innerHTML = html;
+    var chips = box.querySelectorAll('.fchip');
+    for (var k = 0; k < chips.length; k++) {
+      chips[k].onclick = function () {
+        STATE.filter = this.getAttribute('data-ch');
+        STATE.offset = 0;
+        document.getElementById('list').innerHTML = '';
+        loadFilters();
+        loadBallots();
+      };
+    }
+  } catch (err) { console.error('loadFilters:', err); }
+}
+
+// Renders one votable card. The whole point of the feed is that voting happens
+// here — clicking through to a page for every ballot is not scrolling, it is
+// filing.
+function cardHtml(p) {
+  var tot = p.a_count + p.b_count;
+  var pa = tot > 0 ? Math.round(p.a_count * 100 / tot) : 50;
+  var mine = null;
+  try { mine = localStorage.getItem('qv_vote_' + p.id); } catch (e) {}
+  return '<div class="ballot" id="c_' + esc(p.id) + '">'
+    + '<div class="q">' + esc(p.question) + '</div>'
+    + (p.detail ? '<div class="d">' + esc(p.detail) + '</div>' : '')
+    + '<div class="vrow">'
+    + '<button class="vbtn a' + (mine === 'A' ? ' mine' : '') + '" data-id="' + esc(p.id) + '" data-c="A">' + esc(p.label_a) + '</button>'
+    + '<button class="vbtn b' + (mine === 'B' ? ' mine' : '') + '" data-id="' + esc(p.id) + '" data-c="B">' + esc(p.label_b) + '</button>'
+    + '</div>'
+    + '<div class="mini"><span class="fa" style="width:' + pa + '%"></span><span class="fb" style="width:' + (100 - pa) + '%"></span></div>'
+    + '<div class="meta"><span>' + (tot > 0 ? pa + '% · ' + (100 - pa) + '%' : 'no votes yet') + '</span>'
+    + '<span>#' + esc(p.channel) + ' · ' + (tot + p.p_count) + ' votes · '
+    + '<a href="b.html?id=' + esc(p.id) + '">OPEN</a></span></div></div>';
+}
+
+function wireCards(scope) {
+  var btns = scope.querySelectorAll('.vbtn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].onclick = function () { voteInline(this.getAttribute('data-id'), this.getAttribute('data-c')); };
+  }
+}
+
+// WRITES: qv_votes via qv-vote; updates just this card in place
+async function voteInline(id, choice) {
+  var card = document.getElementById('c_' + id);
+  if (!card || card.dataset.busy === '1') return;
+  card.dataset.busy = '1';
+  try {
+    var r = await fetch(QV.FN + '/qv-vote', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id: id, choice: choice, t: getToken() })
+    });
+    var out = await r.json();
+    if (out.ok) {
+      try { localStorage.setItem('qv_vote_' + id, choice); } catch (e) {}
+      var tot = out.a + out.b;
+      var pa = tot > 0 ? Math.round(out.a * 100 / tot) : 50;
+      card.querySelector('.fa').style.width = pa + '%';
+      card.querySelector('.fb').style.width = (100 - pa) + '%';
+      card.querySelector('.meta span').textContent = pa + '% · ' + (100 - pa) + '%';
+      var ba = card.querySelector('.vbtn.a');
+      var bb = card.querySelector('.vbtn.b');
+      ba.className = 'vbtn a' + (choice === 'A' ? ' mine' : '');
+      bb.className = 'vbtn b' + (choice === 'B' ? ' mine' : '');
+      STATE.voted++;
+    }
+  } catch (err) {
+    console.error('voteInline:', err);
+  }
+  card.dataset.busy = '0';
+}
+
+// READS: qv_polls (anon REST) / WRITES: #list DOM, STATE.offset
+async function loadBallots() {
+  var el = document.getElementById('list');
+  var more = document.getElementById('moreBtn');
+  try {
+    var q = QV.REST + '/qv_polls?status=eq.open&order=created_at.desc'
+      + '&offset=' + STATE.offset + '&limit=' + QV.PAGE
+      + '&select=id,question,detail,label_a,label_b,channel,a_count,b_count,p_count';
+    if (STATE.filter) q += '&channel=eq.' + encodeURIComponent(STATE.filter);
+    var r = await fetch(q, { headers: { apikey: QV.ANON, authorization: 'Bearer ' + QV.ANON } });
+    var rows = await r.json();
+    if (!Array.isArray(rows)) throw new Error('bad response');
+    if (rows.length === 0 && STATE.offset === 0) {
+      el.innerHTML = '<span class="note">No open ballots right now.</span>';
+      more.style.display = 'none';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < rows.length; i++) html += cardHtml(rows[i]);
+    if (STATE.offset === 0) el.innerHTML = html; else el.insertAdjacentHTML('beforeend', html);
+    wireCards(el);
+    STATE.offset += rows.length;
+    more.style.display = rows.length < QV.PAGE ? 'none' : 'block';
   } catch (err) {
     console.error('loadBallots:', err);
-    document.getElementById('list').innerHTML = '<span class="status err">Could not load ballots. Refresh to retry.</span>';
+    if (STATE.offset === 0) el.innerHTML = '<span class="status err">Could not load ballots. Refresh to retry.</span>';
   }
 }
 
@@ -375,9 +484,11 @@ function listenToWorker() {
 
 function init() {
   getToken();
+  loadFilters();
   loadBallots();
   syncNotifyUI();
   listenToWorker();
+  document.getElementById('moreBtn').onclick = loadBallots;
   document.getElementById('notifyBtn').onclick = turnOnNotifications;
   document.getElementById('notifyOff').onclick = turnOffNotifications;
   document.getElementById('testBtn').onclick = sendTest;

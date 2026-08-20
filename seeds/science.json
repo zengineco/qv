@@ -1,0 +1,22 @@
+[
+  { "question": "Should peer review be public?", "label_a": "PUBLIC", "label_b": "ANONYMOUS", "channel": "science" },
+  { "question": "Is there life elsewhere in the universe?", "label_a": "THERE IS", "label_b": "THERE ISN'T", "channel": "science" },
+  { "question": "Should all publicly funded research be free to read?", "label_a": "FREE TO READ", "label_b": "PUBLISHERS DECIDE", "channel": "science" },
+  { "question": "Would you volunteer for a one-way trip to Mars?", "label_a": "I'D GO", "label_b": "NEVER", "channel": "science" },
+  { "question": "Is a failed experiment worth publishing?", "label_a": "PUBLISH IT", "label_b": "DON'T BOTHER", "channel": "science" },
+  { "question": "Should we spend more on space or on oceans?", "label_a": "SPACE", "label_b": "OCEANS", "channel": "science" },
+  { "question": "Is science communication the scientist's job?", "label_a": "THEIR JOB", "label_b": "SOMEONE ELSE'S", "channel": "science" },
+  { "question": "Do you trust a study more with a bigger sample?", "label_a": "MORE", "label_b": "SIZE ISN'T ENOUGH", "channel": "science" },
+  { "question": "Should preprints count as publications?", "label_a": "THEY COUNT", "label_b": "THEY DON'T", "channel": "science" },
+  { "question": "Is nuclear power part of a clean future?", "label_a": "PART OF IT", "label_b": "NOT THE ANSWER", "channel": "science" },
+  { "question": "Would you take a medicine that works but nobody knows why?", "label_a": "TAKE IT", "label_b": "WAIT", "channel": "science" },
+  { "question": "Should AI be credited as an author on a paper?", "label_a": "CREDITED", "label_b": "NEVER", "channel": "science" },
+  { "question": "Is a theory that can't be tested still science?", "label_a": "STILL SCIENCE", "label_b": "NOT SCIENCE", "channel": "science" },
+  { "question": "Should scientists give exact odds instead of saying 'likely'?", "label_a": "EXACT ODDS", "label_b": "PLAIN WORDS", "channel": "science" },
+  { "question": "Is replication more valuable than discovery?", "label_a": "REPLICATION", "label_b": "DISCOVERY", "channel": "science" },
+  { "question": "Would you donate your body to science?", "label_a": "YES", "label_b": "NO", "channel": "science" },
+  { "question": "Should we bring back extinct species?", "label_a": "BRING THEM BACK", "label_b": "LEAVE THEM", "channel": "science" },
+  { "question": "Is the metric system objectively better?", "label_a": "BETTER", "label_b": "NOT REALLY", "channel": "science" },
+  { "question": "Do you read the methods section?", "label_a": "I DO", "label_b": "I SKIP IT", "channel": "science" },
+  { "question": "Should research funding go to safe bets or long shots?", "label_a": "SAFE BETS", "label_b": "LONG SHOTS", "channel": "science" }
+]

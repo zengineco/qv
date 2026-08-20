@@ -1,0 +1,22 @@
+[
+  { "question": "Rent or buy?", "label_a": "RENT", "label_b": "BUY", "channel": "money" },
+  { "question": "Do you check your bank balance daily?", "label_a": "DAILY", "label_b": "RARELY", "channel": "money" },
+  { "question": "Is a budget useful or restrictive?", "label_a": "USEFUL", "label_b": "RESTRICTIVE", "channel": "money" },
+  { "question": "Would you rather have time or money?", "label_a": "TIME", "label_b": "MONEY", "channel": "money" },
+  { "question": "Should salaries be shared openly between coworkers?", "label_a": "SHARE THEM", "label_b": "KEEP PRIVATE", "channel": "money" },
+  { "question": "Is buying a coffee out a waste of money?", "label_a": "A WASTE", "label_b": "WORTH IT", "channel": "money" },
+  { "question": "Pay off debt or invest first?", "label_a": "PAY OFF DEBT", "label_b": "INVEST", "channel": "money" },
+  { "question": "Is a warranty ever worth buying?", "label_a": "SOMETIMES", "label_b": "NEVER", "channel": "money" },
+  { "question": "Do you use cash for anything anymore?", "label_a": "STILL DO", "label_b": "CARD ONLY", "channel": "money" },
+  { "question": "Should schools teach personal finance?", "label_a": "REQUIRED", "label_b": "NOT THEIR JOB", "channel": "money" },
+  { "question": "Is renting a car cheaper than owning one in a city?", "label_a": "CHEAPER", "label_b": "OWN ONE", "channel": "money" },
+  { "question": "Would you take a lump sum or payments over time?", "label_a": "LUMP SUM", "label_b": "PAYMENTS", "channel": "money" },
+  { "question": "Is it rude to ask what someone earns?", "label_a": "RUDE", "label_b": "FINE", "channel": "money" },
+  { "question": "Do you round up donations at checkout?", "label_a": "I DO", "label_b": "I DON'T", "channel": "money" },
+  { "question": "Should prices include tax on the shelf label?", "label_a": "INCLUDE IT", "label_b": "ADD AT REGISTER", "channel": "money" },
+  { "question": "Is a subscription you forgot about your fault?", "label_a": "MY FAULT", "label_b": "THEIR TRICK", "channel": "money" },
+  { "question": "Save for retirement or spend while young?", "label_a": "SAVE", "label_b": "SPEND", "channel": "money" },
+  { "question": "Is a house an investment or a place to live?", "label_a": "INVESTMENT", "label_b": "A PLACE TO LIVE", "channel": "money" },
+  { "question": "Would you lend money to a friend?", "label_a": "WOULD", "label_b": "WOULDN'T", "channel": "money" },
+  { "question": "Is haggling worth the discomfort?", "label_a": "WORTH IT", "label_b": "JUST PAY", "channel": "money" }
+]

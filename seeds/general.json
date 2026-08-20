@@ -1,14 +1,68 @@
 [
-  { "question": "Toilet paper: over or under?", "label_a": "OVER", "label_b": "UNDER", "channel": "general" },
-  { "question": "Do you make your bed every morning?", "label_a": "EVERY DAY", "label_b": "NEVER", "channel": "general" },
-  { "question": "Window seat or aisle seat?", "label_a": "WINDOW", "label_b": "AISLE", "channel": "general" },
-  { "question": "Do you answer calls from unknown numbers?", "label_a": "ANSWER", "label_b": "IGNORE", "channel": "general" },
-  { "question": "Should tipping be replaced by higher wages?", "label_a": "HIGHER WAGES", "label_b": "KEEP TIPPING", "channel": "general" },
-  { "question": "Physical books or e-books?", "label_a": "PHYSICAL", "label_b": "DIGITAL", "channel": "general" },
-  { "question": "Is a four-day work week a good idea?", "label_a": "GOOD IDEA", "label_b": "BAD IDEA", "channel": "general" },
-  { "question": "Do you read the terms before clicking agree?", "label_a": "I READ THEM", "label_b": "NEVER", "channel": "general" },
-  { "question": "Morning person or night owl?", "label_a": "MORNING", "label_b": "NIGHT", "channel": "general" },
-  { "question": "Should daylight saving time be abolished?", "label_a": "ABOLISH IT", "label_b": "KEEP IT", "channel": "general" },
-  { "question": "Text or call?", "label_a": "TEXT", "label_b": "CALL", "channel": "general" },
-  { "question": "Do you still use cash?", "label_a": "YES", "label_b": "CARD ONLY", "channel": "general" }
+  {
+    "question": "Toilet paper: over or under?",
+    "label_a": "OVER",
+    "label_b": "UNDER",
+    "channel": "general"
+  },
+  {
+    "question": "Do you make your bed every morning?",
+    "label_a": "EVERY DAY",
+    "label_b": "NEVER",
+    "channel": "general"
+  },
+  {
+    "question": "Window seat or aisle seat?",
+    "label_a": "WINDOW",
+    "label_b": "AISLE",
+    "channel": "general"
+  },
+  {
+    "question": "Do you answer calls from unknown numbers?",
+    "label_a": "ANSWER",
+    "label_b": "IGNORE",
+    "channel": "general"
+  },
+  {
+    "question": "Physical books or e-books?",
+    "label_a": "PHYSICAL",
+    "label_b": "DIGITAL",
+    "channel": "general"
+  },
+  {
+    "question": "Is a four-day work week a good idea?",
+    "label_a": "GOOD IDEA",
+    "label_b": "BAD IDEA",
+    "channel": "general"
+  },
+  {
+    "question": "Do you read the terms before clicking agree?",
+    "label_a": "I READ THEM",
+    "label_b": "NEVER",
+    "channel": "general"
+  },
+  {
+    "question": "Morning person or night owl?",
+    "label_a": "MORNING",
+    "label_b": "NIGHT",
+    "channel": "general"
+  },
+  {
+    "question": "Should daylight saving time be abolished?",
+    "label_a": "ABOLISH IT",
+    "label_b": "KEEP IT",
+    "channel": "general"
+  },
+  {
+    "question": "Text or call?",
+    "label_a": "TEXT",
+    "label_b": "CALL",
+    "channel": "general"
+  },
+  {
+    "question": "Do you still use cash?",
+    "label_a": "YES",
+    "label_b": "CARD ONLY",
+    "channel": "general"
+  }
 ]

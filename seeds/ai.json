@@ -1,0 +1,22 @@
+[
+  { "question": "Should AI-generated images be labelled?", "label_a": "LABELLED", "label_b": "NO NEED", "channel": "ai" },
+  { "question": "Would you tell someone an email was written by AI?", "label_a": "I'D TELL THEM", "label_b": "I WOULDN'T", "channel": "ai" },
+  { "question": "Is AI art theft?", "label_a": "THEFT", "label_b": "NOT THEFT", "channel": "ai" },
+  { "question": "Should students be allowed to use AI on homework?", "label_a": "ALLOWED", "label_b": "BANNED", "channel": "ai" },
+  { "question": "Do you say please to a chatbot?", "label_a": "I DO", "label_b": "I DON'T", "channel": "ai" },
+  { "question": "Would you trust an AI diagnosis over a doctor's?", "label_a": "THE AI", "label_b": "THE DOCTOR", "channel": "ai" },
+  { "question": "Should AI companies pay for the data they trained on?", "label_a": "PAY FOR IT", "label_b": "FAIR USE", "channel": "ai" },
+  { "question": "Is it worse for AI to be confidently wrong or to refuse?", "label_a": "CONFIDENTLY WRONG", "label_b": "REFUSING", "channel": "ai" },
+  { "question": "Will AI create more jobs than it removes?", "label_a": "MORE JOBS", "label_b": "FEWER", "channel": "ai" },
+  { "question": "Should an AI be allowed to write the news?", "label_a": "ALLOWED", "label_b": "NOT ALLOWED", "channel": "ai" },
+  { "question": "Can you tell AI writing from human writing?", "label_a": "USUALLY", "label_b": "NOT REALLY", "channel": "ai" },
+  { "question": "Is a résumé written by AI dishonest?", "label_a": "DISHONEST", "label_b": "JUST A TOOL", "channel": "ai" },
+  { "question": "Should AI have a right to refuse a request?", "label_a": "IT SHOULD", "label_b": "IT SHOULDN'T", "channel": "ai" },
+  { "question": "Would you want an AI to summarise your messages?", "label_a": "YES", "label_b": "NO", "channel": "ai" },
+  { "question": "Is prompt writing a real skill?", "label_a": "A REAL SKILL", "label_b": "NOT REALLY", "channel": "ai" },
+  { "question": "Should AI voices be allowed to imitate real people?", "label_a": "WITH CONSENT", "label_b": "NEVER", "channel": "ai" },
+  { "question": "Do you check what an AI tells you?", "label_a": "ALWAYS", "label_b": "RARELY", "channel": "ai" },
+  { "question": "Is 'the AI made a mistake' an acceptable excuse?", "label_a": "ACCEPTABLE", "label_b": "NOT ACCEPTABLE", "channel": "ai" },
+  { "question": "Should there be an off switch requirement for AI systems?", "label_a": "REQUIRED", "label_b": "UNNECESSARY", "channel": "ai" },
+  { "question": "Is AI more useful for starting or for finishing work?", "label_a": "STARTING", "label_b": "FINISHING", "channel": "ai" }
+]

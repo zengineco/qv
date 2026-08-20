@@ -1,0 +1,20 @@
+[
+  { "question": "Should streamers show their face?", "label_a": "SHOW IT", "label_b": "STAY ANONYMOUS", "channel": "creators" },
+  { "question": "Is a paid subscription better than ads?", "label_a": "SUBSCRIPTION", "label_b": "ADS", "channel": "creators" },
+  { "question": "Should sponsored content be labelled in the first ten seconds?", "label_a": "FIRST TEN SECONDS", "label_b": "ANYWHERE", "channel": "creators" },
+  { "question": "Do you watch a video at normal speed?", "label_a": "NORMAL", "label_b": "SPED UP", "channel": "creators" },
+  { "question": "Is short-form content making attention worse?", "label_a": "WORSE", "label_b": "NO EFFECT", "channel": "creators" },
+  { "question": "Should comments be on by default?", "label_a": "ON", "label_b": "OFF", "channel": "creators" },
+  { "question": "Is a small loyal audience better than a big passive one?", "label_a": "SMALL AND LOYAL", "label_b": "BIG", "channel": "creators" },
+  { "question": "Would you pay to remove ads from a creator you like?", "label_a": "I'D PAY", "label_b": "I'D WATCH ADS", "channel": "creators" },
+  { "question": "Should platforms show creators exactly how the algorithm ranked them?", "label_a": "SHOW IT", "label_b": "KEEP IT SECRET", "channel": "creators" },
+  { "question": "Is posting daily worth the burnout?", "label_a": "WORTH IT", "label_b": "NOT WORTH IT", "channel": "creators" },
+  { "question": "Do thumbnails need faces?", "label_a": "THEY DO", "label_b": "THEY DON'T", "channel": "creators" },
+  { "question": "Should a creator reply to every comment?", "label_a": "EVERY ONE", "label_b": "IMPOSSIBLE", "channel": "creators" },
+  { "question": "Is an audience poll better than a comment section?", "label_a": "A POLL", "label_b": "COMMENTS", "channel": "creators" },
+  { "question": "Would you rather have 1,000 real fans or 100,000 followers?", "label_a": "1,000 REAL", "label_b": "100,000", "channel": "creators" },
+  { "question": "Should live chat be slowed down during big streams?", "label_a": "SLOW IT", "label_b": "LET IT FLY", "channel": "creators" },
+  { "question": "Is deleting old content dishonest?", "label_a": "DISHONEST", "label_b": "THEIR RIGHT", "channel": "creators" },
+  { "question": "Do you subscribe or just watch?", "label_a": "SUBSCRIBE", "label_b": "JUST WATCH", "channel": "creators" },
+  { "question": "Should a creator disclose using AI in their process?", "label_a": "DISCLOSE", "label_b": "NO NEED", "channel": "creators" }
+]

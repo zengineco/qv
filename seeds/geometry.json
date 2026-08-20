@@ -1,0 +1,18 @@
+[
+  { "question": "Is a square a rectangle?", "label_a": "IT IS", "label_b": "IT ISN'T", "channel": "geometry" },
+  { "question": "Is a circle a polygon with infinite sides?", "label_a": "YES", "label_b": "NO", "channel": "geometry" },
+  { "question": "Should geometry still be taught with proofs?", "label_a": "WITH PROOFS", "label_b": "WITHOUT", "channel": "geometry" },
+  { "question": "Does a straight line exist in nature?", "label_a": "IT DOES", "label_b": "IT DOESN'T", "channel": "geometry" },
+  { "question": "Is a doughnut the same shape as a coffee cup?", "detail": "One hole each, so a topologist says yes.", "label_a": "SAME", "label_b": "DIFFERENT", "channel": "geometry" },
+  { "question": "Is the shortest path between two points always a line?", "label_a": "ALWAYS", "label_b": "NOT ALWAYS", "channel": "geometry" },
+  { "question": "Are parallel lines guaranteed never to meet?", "label_a": "GUARANTEED", "label_b": "DEPENDS", "channel": "geometry" },
+  { "question": "Is a map projection ever honest?", "label_a": "CAN BE", "label_b": "ALWAYS LIES", "channel": "geometry" },
+  { "question": "Should the Mercator map be retired from classrooms?", "label_a": "RETIRE IT", "label_b": "KEEP IT", "channel": "geometry" },
+  { "question": "Is symmetry beautiful or boring?", "label_a": "BEAUTIFUL", "label_b": "BORING", "channel": "geometry" },
+  { "question": "Can you fold a paper in half more than seven times?", "label_a": "YOU CAN", "label_b": "YOU CAN'T", "channel": "geometry" },
+  { "question": "Is a fractal a shape or a process?", "label_a": "A SHAPE", "label_b": "A PROCESS", "channel": "geometry" },
+  { "question": "Does a coastline have a definite length?", "label_a": "IT DOES", "label_b": "IT DOESN'T", "channel": "geometry" },
+  { "question": "Hexagons: the best tiling shape?", "label_a": "THE BEST", "label_b": "OVERRATED", "channel": "geometry" },
+  { "question": "Is a knot still a knot if the ends are joined?", "label_a": "STILL A KNOT", "label_b": "SOMETHING ELSE", "channel": "geometry" },
+  { "question": "Should a proof convince you or just be correct?", "label_a": "CONVINCE ME", "label_b": "JUST BE CORRECT", "channel": "geometry" }
+]

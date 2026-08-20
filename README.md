@@ -1,4 +1,4 @@
-# QV — QikVote v0.4.0 ("Ballot Box")
+# QV — QikVote v0.5.0 ("Ballot Box")
 
 **Live ballots. One tap, one vote, live needle. The ballot comes to you.**
 
@@ -14,7 +14,7 @@ An F-Keys product. Home: qv.f-keys.com
 
 | File | What it is |
 |---|---|
-| `index.html` | Home — open ballots, channel notifications opt-in, "apply to be a creator" |
+| `index.html` | The feed — vote on ballots in place, filter by channel, page through; plus notifications opt-in and "apply to be a creator" |
 | `b.html?id=…` | A ballot — vote, change your vote, watch the live needle, copy link/embed |
 | `e.html?id=…` | Compact ballot used inside embeds (iframes) |
 | `qv.js` | The embed loader — one script tag puts a live ballot on any website |
@@ -89,6 +89,13 @@ https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://ihclxurachkewtgnrldc.
 
 The webhook **fails closed** — if the secret is missing from config, the endpoint
 refuses every update rather than trusting an unauthenticated caller.
+
+## The feed
+
+The home page is the product. Ballots are **votable in the list** — tap a side,
+the needle moves, keep scrolling. Clicking into a page for every ballot is
+filing, not voting. Channel chips filter the board, and paging loads 25 at a
+time.
 
 ## Seeding ballots in bulk
 
@@ -167,4 +174,4 @@ Adding your own is one JSON object:
 
 ---
 
-QV v0.4.0 · www.f-keys.com | © 2026 F-Keys™
+QV v0.5.0 · www.f-keys.com | © 2026 F-Keys™

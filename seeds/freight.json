@@ -1,0 +1,20 @@
+[
+  { "question": "Should trucks be allowed in the left lane?", "label_a": "ALLOWED", "label_b": "KEEP RIGHT", "channel": "freight" },
+  { "question": "Will driverless trucks be normal within ten years?", "label_a": "NORMAL", "label_b": "NOT CLOSE", "channel": "freight" },
+  { "question": "Should drivers be paid by the mile or by the hour?", "label_a": "BY THE MILE", "label_b": "BY THE HOUR", "channel": "freight" },
+  { "question": "Is same-day delivery worth what it costs?", "label_a": "WORTH IT", "label_b": "NOT WORTH IT", "channel": "freight" },
+  { "question": "Do you tip a delivery driver?", "label_a": "ALWAYS", "label_b": "RARELY", "channel": "freight" },
+  { "question": "Should detention time be paid from minute one?", "label_a": "FROM MINUTE ONE", "label_b": "AFTER A GRACE PERIOD", "channel": "freight" },
+  { "question": "Are electronic logging devices good for safety?", "label_a": "GOOD", "label_b": "BAD", "channel": "freight" },
+  { "question": "Load heavy items over the axles or spread them evenly?", "label_a": "OVER THE AXLES", "label_b": "SPREAD EVENLY", "channel": "freight" },
+  { "question": "Is a poorly loaded trailer the driver's fault or the loader's?", "label_a": "THE DRIVER", "label_b": "THE LOADER", "channel": "freight" },
+  { "question": "Should truck parking be publicly funded?", "label_a": "PUBLICLY FUNDED", "label_b": "PRIVATE", "channel": "freight" },
+  { "question": "Straps or chains?", "label_a": "STRAPS", "label_b": "CHAINS", "channel": "freight" },
+  { "question": "Is the driver shortage real or a pay problem?", "label_a": "REAL SHORTAGE", "label_b": "PAY PROBLEM", "channel": "freight" },
+  { "question": "Should delivery windows be guaranteed to the hour?", "label_a": "TO THE HOUR", "label_b": "A WINDOW IS FINE", "channel": "freight" },
+  { "question": "Rail or road for long haul?", "label_a": "RAIL", "label_b": "ROAD", "channel": "freight" },
+  { "question": "Would you take a job that kept you away from home for weeks?", "label_a": "WOULD", "label_b": "WOULDN'T", "channel": "freight" },
+  { "question": "Should warehouses run 24 hours?", "label_a": "24 HOURS", "label_b": "DAYTIME ONLY", "channel": "freight" },
+  { "question": "Is free shipping ever really free?", "label_a": "REALLY FREE", "label_b": "BUILT INTO THE PRICE", "channel": "freight" },
+  { "question": "Pack the truck tight or leave room to shift?", "label_a": "TIGHT", "label_b": "LEAVE ROOM", "channel": "freight" }
+]

@@ -1,0 +1,20 @@
+[
+  { "question": "Should replay review decide close calls?", "label_a": "USE REPLAY", "label_b": "LET THEM CALL IT", "channel": "sports" },
+  { "question": "Is a tie worse than a loss?", "label_a": "WORSE", "label_b": "BETTER", "channel": "sports" },
+  { "question": "Should college athletes be paid?", "label_a": "PAID", "label_b": "NOT PAID", "channel": "sports" },
+  { "question": "Watch at the stadium or at home?", "label_a": "STADIUM", "label_b": "HOME", "channel": "sports" },
+  { "question": "Is the regular season too long?", "label_a": "TOO LONG", "label_b": "JUST RIGHT", "channel": "sports" },
+  { "question": "Should a champion be decided by a single game?", "label_a": "ONE GAME", "label_b": "A SERIES", "channel": "sports" },
+  { "question": "Are analytics making sports better or worse?", "label_a": "BETTER", "label_b": "WORSE", "channel": "sports" },
+  { "question": "Is being a fan of a losing team character-building?", "label_a": "BUILDS CHARACTER", "label_b": "JUST PAINFUL", "channel": "sports" },
+  { "question": "Should betting ads be allowed during games?", "label_a": "ALLOWED", "label_b": "BANNED", "channel": "sports" },
+  { "question": "Overtime or settle it another way?", "label_a": "OVERTIME", "label_b": "ANOTHER WAY", "channel": "sports" },
+  { "question": "Do you boo your own team?", "label_a": "I DO", "label_b": "NEVER", "channel": "sports" },
+  { "question": "Is esports a sport?", "label_a": "A SPORT", "label_b": "NOT A SPORT", "channel": "sports" },
+  { "question": "Should the greatest of all time be decided by titles or by peak?", "label_a": "TITLES", "label_b": "PEAK", "channel": "sports" },
+  { "question": "Is a loyal one-team career worth more than rings?", "label_a": "LOYALTY", "label_b": "RINGS", "channel": "sports" },
+  { "question": "Should refs be miked up for the crowd?", "label_a": "MIKE THEM", "label_b": "DON'T", "channel": "sports" },
+  { "question": "Is the halftime show better than the game?", "label_a": "THE SHOW", "label_b": "THE GAME", "channel": "sports" },
+  { "question": "Would you rather your team rebuild or chase a title now?", "label_a": "REBUILD", "label_b": "CHASE IT NOW", "channel": "sports" },
+  { "question": "Are throwback uniforms better than current ones?", "label_a": "THROWBACKS", "label_b": "CURRENT", "channel": "sports" }
+]
