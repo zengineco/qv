@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <!-- ============================================================
-     QV (QikVote) v0.1.0 — index
+     QV (QikVote) v0.3.1 — index
      Home: open ballots, channel notifications opt-in, creator apply.
      F-Keys | www.f-keys.com
      ============================================================
@@ -81,6 +81,7 @@ footer{border-top:1px solid var(--line); color:var(--dim); text-align:center; fo
     <div class="chiprow" id="chips"></div>
     <input id="customChannel" maxlength="32" placeholder="custom channel (a-z, 0-9, dash)" autocomplete="off">
     <button class="btn" id="notifyBtn">TURN ON BALLOT NOTIFICATIONS</button>
+    <button class="btn" id="testBtn" style="display:none; margin-top:8px">SEND ME A TEST BALLOT NOW</button>
     <button class="btn ghost" id="notifyOff" style="display:none; margin-top:8px">Turn off notifications</button>
     <div class="status" id="notifyStatus"></div>
     <div class="note" id="iosNote" style="display:none">iPhone: tap Share → <b>Add to Home Screen</b>, open QV from there, then turn on notifications. iOS shows ballots as tap-to-open (Apple doesn't allow buttons on web notifications yet).</div>
@@ -98,7 +99,7 @@ footer{border-top:1px solid var(--line); color:var(--dim); text-align:center; fo
 
   <div class="note" style="text-align:center">Every result is labeled honestly: casual integrity, one vote per browser, self-selected sample. <a href="creator.html">Creator terminal</a></div>
 </main>
-<footer>QV v0.1.0<br>www.f-keys.com | © 2026 F-Keys™</footer>
+<footer>QV v0.3.1<br>www.f-keys.com | © 2026 F-Keys™</footer>
 
 <script>
 // ============================================================
@@ -251,14 +252,39 @@ async function turnOnNotifications() {
     getToken(); // make sure the SW can vote with the same identity
     STATE.subscribed = true;
     try { localStorage.setItem('qv_channels', JSON.stringify(out.channels)); } catch (e) {}
-    setNotify('On. Channels: #' + out.channels.join('  #'), true);
+    setNotify('On. Channels: #' + out.channels.join('  #') + ' — now tap the test button below.', true);
     document.getElementById('notifyOff').style.display = 'block';
+    document.getElementById('testBtn').style.display = 'block';
     document.getElementById('notifyBtn').textContent = 'UPDATE CHANNELS';
   } catch (err) {
     console.error('turnOnNotifications:', err);
     setNotify('Could not subscribe: ' + (err && err.message ? err.message : 'unknown error'), false);
   }
   STATE.busy = false;
+}
+
+// READS: current push subscription / WRITES: fires one push to THIS device only.
+// The whole product in one tap: notification arrives, two buttons, vote lands
+// without anything opening.
+async function sendTest() {
+  try {
+    setNotify('Sending…', true);
+    var reg = await navigator.serviceWorker.getRegistration();
+    var sub = reg ? await reg.pushManager.getSubscription() : null;
+    if (!sub) { setNotify('Turn notifications on first.', false); return; }
+    var r = await fetch(QV.FN + '/qv-subscribe', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'test', endpoint: sub.endpoint })
+    });
+    var out = await r.json();
+    if (out.ok) setNotify('Sent — check your notifications, then tap a vote button on it.', true);
+    else if (out.error === 'no_open_ballot') setNotify('No open ballot to send.', false);
+    else if (out.error === 'subscription_expired') setNotify('Subscription expired — turn notifications on again.', false);
+    else setNotify('Could not send: ' + (out.error || 'unknown'), false);
+  } catch (err) {
+    console.error('sendTest:', err);
+    setNotify('Network error sending the test.', false);
+  }
 }
 
 // WRITES: removes push subscription + backend row
@@ -298,6 +324,7 @@ async function syncNotifyUI() {
           STATE.subscribed = true;
           setNotify('On. Channels: #' + (STATE.picked.length ? STATE.picked.join('  #') : 'general'), true);
           document.getElementById('notifyOff').style.display = 'block';
+          document.getElementById('testBtn').style.display = 'block';
           document.getElementById('notifyBtn').textContent = 'UPDATE CHANNELS';
         }
       }
@@ -334,6 +361,7 @@ function init() {
   syncNotifyUI();
   document.getElementById('notifyBtn').onclick = turnOnNotifications;
   document.getElementById('notifyOff').onclick = turnOffNotifications;
+  document.getElementById('testBtn').onclick = sendTest;
   document.getElementById('applyBtn').onclick = apply;
 }
 document.addEventListener('DOMContentLoaded', init);
