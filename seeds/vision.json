@@ -1,0 +1,12 @@
+[
+  { "question": "The dress: blue and black, or white and gold?", "detail": "The 2015 photo that split the internet. Your first instinct only.", "label_a": "BLUE/BLACK", "label_b": "WHITE/GOLD", "channel": "vision" },
+  { "question": "Should colour-blind modes be on by default in games?", "detail": "Roughly 1 in 12 men has some form of colour vision deficiency.", "label_a": "ON BY DEFAULT", "label_b": "OPT IN", "channel": "vision" },
+  { "question": "Do you dream in colour?", "label_a": "IN COLOUR", "label_b": "NOT REALLY", "channel": "vision" },
+  { "question": "Have you ever taken a colour vision test?", "label_a": "YES", "label_b": "NEVER", "channel": "vision" },
+  { "question": "Dark mode or light mode?", "label_a": "DARK", "label_b": "LIGHT", "channel": "vision" },
+  { "question": "Do you wear glasses or contacts?", "label_a": "YES", "label_b": "NO", "channel": "vision" },
+  { "question": "Should websites be required to meet accessibility standards?", "label_a": "REQUIRED", "label_b": "VOLUNTARY", "channel": "vision" },
+  { "question": "Can you read this without squinting?", "label_a": "EASILY", "label_b": "SQUINTING", "channel": "vision" },
+  { "question": "Is your dominant eye the same side as your dominant hand?", "label_a": "SAME SIDE", "label_b": "OPPOSITE", "channel": "vision" },
+  { "question": "Blue light glasses: real benefit or placebo?", "label_a": "REAL", "label_b": "PLACEBO", "channel": "vision" }
+]

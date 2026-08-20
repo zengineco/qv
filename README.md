@@ -1,4 +1,4 @@
-# QV — QikVote v0.3.0 ("Ballot Box")
+# QV — QikVote v0.4.0 ("Ballot Box")
 
 **Live ballots. One tap, one vote, live needle. The ballot comes to you.**
 
@@ -21,6 +21,8 @@ An F-Keys product. Home: qv.f-keys.com
 | `sw.js` | Service worker — shows push notifications and records votes from their buttons |
 | `creator.html` | Creator terminal — publish/close ballots, watch tallies (needs a creator key) |
 | `manifest.json`, `icon.svg` | PWA bits (required for iPhone notifications via Add to Home Screen) |
+| `pollcreator.py` | Seeds ballots in bulk from `seeds/*.json` — silent by default |
+| `seeds/*.json` | Curated question sets by channel (food, vision, math, ciphers, games, general) |
 
 Surfaces a ballot reaches: the web page, any site via one script tag, a browser
 notification with vote buttons, and a Telegram channel post.
@@ -88,6 +90,39 @@ https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://ihclxurachkewtgnrldc.
 The webhook **fails closed** — if the secret is missing from config, the endpoint
 refuses every update rather than trusting an unauthenticated caller.
 
+## Seeding ballots in bulk
+
+A ballot platform with nothing to vote on is a dead page. `pollcreator.py` fills
+it from curated question sets — no dependencies, standard library only.
+
+```bash
+python pollcreator.py --dry-run          # see everything that would publish
+python pollcreator.py food               # publish one set
+python pollcreator.py                    # publish every set
+```
+
+The creator key comes from `QV_CREATOR_KEY` (never commit it):
+
+```
+PowerShell:  $env:QV_CREATOR_KEY = 'qvc_...'
+bash:        export QV_CREATOR_KEY=qvc_...
+```
+
+**Seeding is silent.** Publishing normally fires a push notification to every
+subscriber of that channel — so creating 40 ballots at once would fire 40
+notifications at every person. The seeder passes `notify:false` and
+`telegram:false` unless you explicitly pass `--notify` / `--telegram`.
+
+Re-running a seed file is safe: question reconciliation returns each ballot as a
+duplicate and points at the live one rather than splitting its tally.
+
+Adding your own is one JSON object:
+
+```json
+{ "question": "Spaghetti or rigatoni?", "label_a": "SPAGHETTI",
+  "label_b": "RIGATONI", "channel": "food", "detail": "optional context" }
+```
+
 ## How trust works (honest by design)
 
 - Voting is anonymous. Your choice is stored on your device; the server keeps a
@@ -132,4 +167,4 @@ refuses every update rather than trusting an unauthenticated caller.
 
 ---
 
-QV v0.3.0 · www.f-keys.com | © 2026 F-Keys™
+QV v0.4.0 · www.f-keys.com | © 2026 F-Keys™

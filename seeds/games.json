@@ -1,0 +1,11 @@
+[
+  { "question": "Should every game have an easy mode?", "label_a": "EVERY GAME", "label_b": "NOT EVERY GAME", "channel": "games" },
+  { "question": "Fortnite: building or zero build?", "label_a": "BUILDING", "label_b": "ZERO BUILD", "channel": "games" },
+  { "question": "Controller or mouse and keyboard?", "label_a": "CONTROLLER", "label_b": "MOUSE + KB", "channel": "games" },
+  { "question": "Are day-one patches acceptable?", "label_a": "ACCEPTABLE", "label_b": "NOT ACCEPTABLE", "channel": "games" },
+  { "question": "Do you finish games you start?", "label_a": "FINISH THEM", "label_b": "RARELY", "channel": "games" },
+  { "question": "Should multiplayer games have voice chat on by default?", "label_a": "ON", "label_b": "OFF", "channel": "games" },
+  { "question": "Remakes or new IP?", "label_a": "REMAKES", "label_b": "NEW IP", "channel": "games" },
+  { "question": "Is a game with ads still free?", "label_a": "STILL FREE", "label_b": "YOU PAY", "channel": "games" },
+  { "question": "Subtitles on or off?", "label_a": "ON", "label_b": "OFF", "channel": "games" }
+]

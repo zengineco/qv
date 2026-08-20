@@ -1,0 +1,20 @@
+[
+  { "question": "Spaghetti or rigatoni?", "label_a": "SPAGHETTI", "label_b": "RIGATONI", "channel": "food" },
+  { "question": "Do you rinse pasta after draining it?", "label_a": "RINSE", "label_b": "NEVER", "channel": "food" },
+  { "question": "Ketchup: fridge or cupboard?", "label_a": "FRIDGE", "label_b": "CUPBOARD", "channel": "food" },
+  { "question": "Is a hot dog a sandwich?", "label_a": "SANDWICH", "label_b": "NOT", "channel": "food" },
+  { "question": "Cast iron or stainless steel?", "label_a": "CAST IRON", "label_b": "STAINLESS", "channel": "food" },
+  { "question": "Butter or oil for scrambled eggs?", "label_a": "BUTTER", "label_b": "OIL", "channel": "food" },
+  { "question": "Walnut potica or poppy seed?", "detail": "The two classic fillings. Slovenian households have died on this hill.", "label_a": "WALNUT", "label_b": "POPPY SEED", "channel": "food" },
+  { "question": "Should potica be sliced thick or thin?", "label_a": "THICK", "label_b": "THIN", "channel": "food" },
+  { "question": "Pineapple on pizza?", "label_a": "YES", "label_b": "NO", "channel": "food" },
+  { "question": "Cereal before milk, or milk before cereal?", "label_a": "CEREAL FIRST", "label_b": "MILK FIRST", "channel": "food" },
+  { "question": "Is a burrito a sandwich?", "label_a": "SANDWICH", "label_b": "NOT", "channel": "food" },
+  { "question": "Salted or unsalted butter for baking?", "label_a": "SALTED", "label_b": "UNSALTED", "channel": "food" },
+  { "question": "Do you preheat the pan or the oil first?", "label_a": "PAN FIRST", "label_b": "OIL FIRST", "channel": "food" },
+  { "question": "Well done steak: acceptable or a crime?", "label_a": "ACCEPTABLE", "label_b": "A CRIME", "channel": "food" },
+  { "question": "Leftover pizza: cold or reheated?", "label_a": "COLD", "label_b": "REHEATED", "channel": "food" },
+  { "question": "Gas stove or induction?", "label_a": "GAS", "label_b": "INDUCTION", "channel": "food" },
+  { "question": "Is cereal a soup?", "label_a": "SOUP", "label_b": "NOT SOUP", "channel": "food" },
+  { "question": "Do you measure baking ingredients by weight or by cup?", "label_a": "WEIGHT", "label_b": "CUPS", "channel": "food" }
+]

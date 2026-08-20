@@ -1,0 +1,5 @@
+# never commit the creator key or local env
+.env
+*.key
+qv-secrets.json
+__pycache__/

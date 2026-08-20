@@ -1,0 +1,10 @@
+[
+  { "question": "Is the Voynich manuscript a hoax?", "detail": "A 15th-century book in an unknown script that nobody has read. Either it says something, or it never did.", "label_a": "A HOAX", "label_b": "REAL TEXT", "channel": "ciphers" },
+  { "question": "Will the Voynich manuscript ever be read?", "label_a": "ONE DAY", "label_b": "NEVER", "channel": "ciphers" },
+  { "question": "Was the Zodiac killer's Z340 solved correctly?", "label_a": "SOLVED", "label_b": "NOT CONVINCED", "channel": "ciphers" },
+  { "question": "Should undeciphered scripts be handed to AI?", "label_a": "HAND THEM OVER", "label_b": "KEEP HUMAN", "channel": "ciphers" },
+  { "question": "Is Linear A ever getting deciphered?", "label_a": "YES", "label_b": "NO", "channel": "ciphers" },
+  { "question": "Would you trust an AI translation of a dead language?", "label_a": "TRUST IT", "label_b": "NOT ALONE", "channel": "ciphers" },
+  { "question": "Do you use a password manager?", "label_a": "YES", "label_b": "NO", "channel": "ciphers" },
+  { "question": "Should encryption have a government backdoor?", "label_a": "NEVER", "label_b": "SOMETIMES", "channel": "ciphers" }
+]

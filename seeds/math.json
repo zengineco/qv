@@ -1,0 +1,14 @@
+[
+  { "question": "Is 0 a natural number?", "detail": "Set theorists usually say yes, number theorists usually say no.", "label_a": "YES", "label_b": "NO", "channel": "math" },
+  { "question": "Does 0.999... equal 1?", "label_a": "EQUALS 1", "label_b": "LESS THAN 1", "channel": "math" },
+  { "question": "Is mathematics discovered or invented?", "label_a": "DISCOVERED", "label_b": "INVENTED", "channel": "math" },
+  { "question": "Is the axiom of choice obviously true?", "detail": "It lets you pick one element from each of infinitely many sets, with no rule for choosing.", "label_a": "OBVIOUS", "label_b": "NOT OBVIOUS", "channel": "math" },
+  { "question": "Should a published proof have to be machine-checked?", "label_a": "REQUIRED", "label_b": "NOT REQUIRED", "channel": "math" },
+  { "question": "Is a computer-assisted proof a real proof?", "label_a": "REAL PROOF", "label_b": "SOMETHING ELSE", "channel": "math" },
+  { "question": "Tau or pi?", "label_a": "TAU", "label_b": "PI", "channel": "math" },
+  { "question": "Do you trust a result more if it is formalised?", "label_a": "MORE", "label_b": "NO DIFFERENCE", "channel": "math" },
+  { "question": "Is infinity a number?", "label_a": "A NUMBER", "label_b": "NOT A NUMBER", "channel": "math" },
+  { "question": "Should proof assistants be taught to undergraduates?", "label_a": "TEACH THEM", "label_b": "LATER", "channel": "math" },
+  { "question": "Is P equal to NP?", "label_a": "P = NP", "label_b": "P ≠ NP", "channel": "math" },
+  { "question": "Elegant proof or short proof?", "label_a": "ELEGANT", "label_b": "SHORT", "channel": "math" }
+]
