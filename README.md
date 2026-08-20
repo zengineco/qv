@@ -1,4 +1,4 @@
-# QV — QikVote v0.2.0 ("Ballot Box")
+# QV — QikVote v0.3.0 ("Ballot Box")
 
 **Live ballots. One tap, one vote, live needle. The ballot comes to you.**
 
@@ -21,6 +21,9 @@ An F-Keys product. Home: qv.f-keys.com
 | `sw.js` | Service worker — shows push notifications and records votes from their buttons |
 | `creator.html` | Creator terminal — publish/close ballots, watch tallies (needs a creator key) |
 | `manifest.json`, `icon.svg` | PWA bits (required for iPhone notifications via Add to Home Screen) |
+
+Surfaces a ballot reaches: the web page, any site via one script tag, a browser
+notification with vote buttons, and a Telegram channel post.
 
 ## Embed a ballot anywhere
 
@@ -45,6 +48,46 @@ than coffee"* contain identical words but have opposite answers, so they are fla
 as related and never auto-merged — the exact-match tier compares the ordered string,
 and the overlap score is labeled as word overlap, not meaning.
 
+## Telegram channel adapter (v0.3.0)
+
+Publishing a ballot also posts it to a Telegram channel with two vote buttons.
+**One API call reaches every subscriber** — a channel has no subscriber cap, and
+posts notify with sound by default, so this sidesteps the ~30 messages/second
+broadcast limit that makes direct-message fanout useless (100,000 DMs takes about
+56 minutes; one channel post takes one call).
+
+A tap votes through the *same* `qv_cast_vote` function the web uses, so a ballot
+has one tally no matter where the vote came from. The voter gets a private toast
+with the live split; nobody else sees who voted. The public post redraws its
+needle at most once every 5 seconds, because Telegram throttles edits to roughly
+one per second per chat and a vote burst would otherwise hit the limit.
+
+Telegram user identities are hashed into their own namespace (`tg:<id>`), so the
+same person voting on the web and in Telegram counts twice. That is a deliberate,
+documented limit — linking them would require asking people to connect accounts,
+which costs the anonymity that is the point.
+
+**Honest limitation:** Telegram notifications cannot carry buttons — the push
+payload format has no field for them. So Telegram is *tap notification → chat
+opens → tap vote*: two taps. True one-tap-from-the-notification voting exists only
+on web push (Chrome/Edge/Firefox desktop, Chrome Android), which QV already has.
+
+### Setup (one time)
+
+1. Message [@BotFather](https://t.me/BotFather) → `/newbot` → copy the token.
+2. Create a Telegram channel, then add the bot as an **administrator** with
+   "Post Messages" and "Edit Messages of Others" permission.
+3. Store the token and channel in `qv_config` (`telegram_bot_token`,
+   `telegram_channel` — the channel as `@yourchannel`).
+4. Point Telegram at the webhook, including the secret from `qv_config`:
+
+```
+https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://ihclxurachkewtgnrldc.supabase.co/functions/v1/qv-telegram&secret_token=<SECRET>&allowed_updates=["callback_query"]
+```
+
+The webhook **fails closed** — if the secret is missing from config, the endpoint
+refuses every update rather than trusting an unauthenticated caller.
+
 ## How trust works (honest by design)
 
 - Voting is anonymous. Your choice is stored on your device; the server keeps a
@@ -64,7 +107,7 @@ and the overlap score is labeled as word overlap, not meaning.
 - RPC `qv_cast_vote` — atomic vote/change + tally + realtime broadcast; callable
   by service role only
 - Edge functions: `qv-vote`, `qv-subscribe`, `qv-publish` (creator key gated,
-  sends web push), `qv-apply`
+  fans out to web push + Telegram), `qv-apply`, `qv-telegram` (webhook)
 - Live needle = Supabase Realtime **broadcast** (topic `poll:{id}`, event
   `tally`) sent from inside the vote transaction — no per-vote row streaming
 
@@ -89,4 +132,4 @@ and the overlap score is labeled as word overlap, not meaning.
 
 ---
 
-QV v0.2.0 · www.f-keys.com | © 2026 F-Keys™
+QV v0.3.0 · www.f-keys.com | © 2026 F-Keys™
