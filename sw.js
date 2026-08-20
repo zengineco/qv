@@ -1,5 +1,5 @@
 // ============================================================
-// QV (QikVote) v0.1.0 — service worker
+// QV (QikVote) v0.3.2 — service worker
 // The soul of the product: vote from the notification, nothing opens.
 // F-Keys | www.f-keys.com
 // ============================================================
@@ -69,24 +69,61 @@ function getToken() {
   });
 }
 
-self.addEventListener('push', function (event) {
-  var data = null;
-  try { data = event.data ? event.data.json() : null; } catch (err) { console.error('push parse:', err); }
-  if (!data || !data.id || !data.q) return;
-  var actions = [];
-  // browsers cap notification actions at 2 — exactly our two options
-  actions.push({ action: 'A', title: String(data.la || 'YES') });
-  actions.push({ action: 'B', title: String(data.lb || 'NO') });
-  event.waitUntil(
-    self.registration.showNotification('QV LIVE — ' + data.q, {
-      body: '#' + (data.ch || 'general') + ' · vote from the buttons, or tap to open',
-      tag: 'qv-' + data.id,
-      renotify: false,
-      icon: 'icon.svg',
-      data: { id: data.id, la: data.la, lb: data.lb },
-      actions: actions
+// tell every open QV tab what the worker just did, so the page can show it.
+// Without this a push failure is invisible: the worker runs with no console
+// anyone is looking at, and "nothing happened" is indistinguishable from
+// "never arrived".
+function report(stage, detail) {
+  return self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+    .then(function (cs) {
+      for (var i = 0; i < cs.length; i++) {
+        cs[i].postMessage({ qv: true, stage: stage, detail: detail || '' });
+      }
     })
-  );
+    .catch(function (err) { console.error('report:', err); });
+}
+
+self.addEventListener('push', function (event) {
+  event.waitUntil((async function () {
+    var data = null;
+    var raw = '';
+    try {
+      raw = event.data ? event.data.text() : '';
+      data = raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      console.error('push parse:', err);
+    }
+    await report('push-received', raw.slice(0, 80));
+
+    // Always show something. A malformed payload used to return silently,
+    // which looked exactly like a push that never arrived.
+    if (!data || !data.id || !data.q) {
+      await self.registration.showNotification('QV', { body: 'A ballot arrived, but it could not be read.' });
+      await report('push-malformed', raw.slice(0, 80));
+      return;
+    }
+
+    try {
+      // browsers cap notification actions at 2 — exactly our two options.
+      // No icon: Chrome on Windows will not render an SVG notification icon,
+      // and a broken icon reference is a silent failure mode.
+      await self.registration.showNotification('QV LIVE — ' + data.q, {
+        body: '#' + (data.ch || 'general') + ' · vote from the buttons, or tap to open',
+        tag: 'qv-' + data.id,
+        renotify: true,
+        requireInteraction: true,
+        data: { id: data.id, la: data.la, lb: data.lb },
+        actions: [
+          { action: 'A', title: String(data.la || 'YES') },
+          { action: 'B', title: String(data.lb || 'NO') }
+        ]
+      });
+      await report('shown', data.q);
+    } catch (err) {
+      console.error('showNotification:', err);
+      await report('show-failed', String(err && err.message ? err.message : err));
+    }
+  })());
 });
 
 // READS: notification data + IDB token / WRITES: vote via qv-vote, replacement notification
@@ -105,9 +142,7 @@ function voteFromNotification(data, choice) {
       return self.registration.showNotification('Counted ✓ ' + labels[choice], {
         body: labels.A + ' ' + pa + '% · ' + labels.B + ' ' + (100 - pa) + '% · ' + (tot + out.p) + ' votes',
         tag: 'qv-' + data.id,
-        renotify: false,
-        icon: 'icon.svg',
-        silent: true,
+        renotify: true,
         data: { id: data.id, la: data.la, lb: data.lb }
       });
     }
@@ -115,7 +150,6 @@ function voteFromNotification(data, choice) {
     return self.registration.showNotification('QV — not counted', {
       body: why,
       tag: 'qv-' + data.id,
-      icon: 'icon.svg',
       data: { id: data.id, la: data.la, lb: data.lb }
     });
   }).catch(function (err) {
@@ -123,7 +157,6 @@ function voteFromNotification(data, choice) {
     return self.registration.showNotification('QV — not counted', {
       body: 'Network error — tap to open the ballot and vote there.',
       tag: 'qv-' + data.id,
-      icon: 'icon.svg',
       data: { id: data.id, la: data.la, lb: data.lb }
     });
   });

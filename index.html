@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <!-- ============================================================
-     QV (QikVote) v0.3.1 — index
+     QV (QikVote) v0.3.2 — index
      Home: open ballots, channel notifications opt-in, creator apply.
      F-Keys | www.f-keys.com
      ============================================================
@@ -99,7 +99,7 @@ footer{border-top:1px solid var(--line); color:var(--dim); text-align:center; fo
 
   <div class="note" style="text-align:center">Every result is labeled honestly: casual integrity, one vote per browser, self-selected sample. <a href="creator.html">Creator terminal</a></div>
 </main>
-<footer>QV v0.3.1<br>www.f-keys.com | © 2026 F-Keys™</footer>
+<footer>QV v0.3.2<br>www.f-keys.com | © 2026 F-Keys™</footer>
 
 <script>
 // ============================================================
@@ -355,10 +355,29 @@ async function apply() {
   }
 }
 
+// The service worker runs where nobody can see its console. It reports each
+// stage back here so a failure reads as a message instead of as silence.
+function listenToWorker() {
+  try {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.addEventListener('message', function (e) {
+      try {
+        var m = e.data;
+        if (!m || !m.qv) return;
+        if (m.stage === 'push-received') setNotify('Push reached this device…', true);
+        else if (m.stage === 'shown') setNotify('Notification shown — check your tray and tap a vote button.', true);
+        else if (m.stage === 'show-failed') setNotify('Windows refused to show it: ' + m.detail, false);
+        else if (m.stage === 'push-malformed') setNotify('Push arrived but was unreadable.', false);
+      } catch (err) { console.error('workerMessage:', err); }
+    });
+  } catch (err) { console.error('listenToWorker:', err); }
+}
+
 function init() {
   getToken();
   loadBallots();
   syncNotifyUI();
+  listenToWorker();
   document.getElementById('notifyBtn').onclick = turnOnNotifications;
   document.getElementById('notifyOff').onclick = turnOffNotifications;
   document.getElementById('testBtn').onclick = sendTest;
